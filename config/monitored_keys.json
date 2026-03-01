@@ -1,0 +1,13 @@
+{
+  "autorun_keys": [
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce"
+  ],
+  "security_keys": [
+    "HKLM\\Software\\Policies\\Microsoft\\Windows Defender",
+    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+    "HKLM\\System\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy"
+  ]
+}

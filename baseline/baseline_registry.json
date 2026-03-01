@@ -1,0 +1,47 @@
+{
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run": {
+        "OneDrive": "\"C:\\Program Files\\Microsoft OneDrive\\OneDrive.exe\" /background",
+        "org.openvpn.client": "C:\\Program Files\\OpenVPN Connect\\OpenVPNConnect.exe --opened-at-login --minimize",
+        "PDFEditorUpdater": "\"C:\\Users\\Asus\\PDFEditor\\PDF Editor.exe\" --cm=--fullupdate",
+        "Claude": "\"C:\\Users\\Asus\\AppData\\Local\\AnthropicClaude\\claude.exe\" --startup",
+        "malware_test": ""
+    },
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce": {},
+    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run": {
+        "SecurityHealth": "%windir%\\system32\\SecurityHealthSystray.exe",
+        "RtkAudUService": "\"C:\\Windows\\System32\\DriverStore\\FileRepository\\realtekservice.inf_amd64_a5b5950537cd134e\\RtkAudUService64.exe\" -background"
+    },
+    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce": {},
+    "HKLM\\Software\\Policies\\Microsoft\\Windows Defender": {},
+    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System": {
+        "ConsentPromptBehaviorAdmin": 5,
+        "ConsentPromptBehaviorEnhancedAdmin": 1,
+        "ConsentPromptBehaviorUser": 3,
+        "DSCAutomationHostEnabled": 2,
+        "EnableCursorSuppression": 1,
+        "EnableFullTrustStartupTasks": 2,
+        "EnableInstallerDetection": 1,
+        "EnableLUA": 1,
+        "EnableSecureUIAPaths": 1,
+        "EnableUIADesktopToggle": 0,
+        "EnableUwpStartupTasks": 2,
+        "EnableVirtualization": 1,
+        "PromptOnSecureDesktop": 1,
+        "SupportFullTrustStartupTasks": 1,
+        "SupportUwpStartupTasks": 1,
+        "TypeOfAdminApprovalMode": 1,
+        "ValidateAdminCodeSignatures": 0,
+        "dontdisplaylastusername": 0,
+        "legalnoticecaption": "",
+        "legalnoticetext": "",
+        "scforceoption": 0,
+        "shutdownwithoutlogon": 1,
+        "undockwithoutlogon": 1
+    },
+    "HKLM\\System\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy": {
+        "DisableStatefulFTP": 0,
+        "DisableStatefulPPTP": 0,
+        "IPSecExempt": 9,
+        "PolicyVersion": 545
+    }
+}
