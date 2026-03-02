@@ -1,4 +1,4 @@
-##windows-registry-change-monitoring-system
+windows-registry-change-monitoring-system
 
 Blue Team endpoint integrity monitoring tool for detecting unauthorized Windows Registry modifications.
 
@@ -16,8 +16,7 @@ Classifies registry changes as ADDED, MODIFIED, or DELETED
 
 Generates structured forensic logs
 
-##1.Features
-
+1. Features
 Registry Monitoring
 
 Autorun key detection (HKCU / HKLM)
@@ -52,17 +51,18 @@ Registry path tracking
 
 Previous vs current value comparison
 
-##2.Architecture
+2. Architecture
 
-Baseline Creation → Continuous Monitoring → State Comparison → Change Detection → Logging
+Baseline Creation
+→ Continuous Monitoring
+→ State Comparison
+→ Change Detection
+→ Logging
 
-##3.Quickstart
-
-Create virtual environment:
-
+3. Quickstart
+Create Virtual Environment
 python -m venv venv
-
-Activate environment:
+Activate Environment
 
 Windows:
 
@@ -71,17 +71,11 @@ venv\Scripts\activate
 Linux/macOS:
 
 source venv/bin/activate
-
-Install dependencies:
-
+Install Dependencies
 pip install -r requirements.txt
-
-Create baseline snapshot:
-
+Create Baseline Snapshot
 python create_baseline.py
-
-Start monitoring:
-
+Start Monitoring
 python main.py
 Example Output
 ('ADDED', 'HKCU\\...\\Run', 'test_value', None, 'C:\\Users\\Public\\test.exe')
@@ -92,7 +86,7 @@ Example Output
 
 ('DELETED', 'HKCU\\...\\Run', 'test_value',
  'C:\\Users\\Public\\modified.exe', None)
-##4.Use Case
+4. Use Case
 
 Designed to simulate:
 
@@ -104,7 +98,7 @@ Registry-based persistence detection
 
 Blue Team defensive scripting
 
-##5.Limitations
+5. Limitations
 
 Polling-based monitoring
 
@@ -114,18 +108,19 @@ No kernel-level monitoring
 
 No SIEM integration
 
-##6.Future Improvements
+6. Future Improvements
 
 Convert to Windows service
 
-Event-driven registry monitoring
+Implement event-driven registry monitoring
 
-SIEM integration
+Integrate with SIEM platforms
 
-Dashboard interface
+Add dashboard interface
 
-Severity-based alert classification
+Implement severity-based alert classification
 
 Author
+
 Sabareeshwari S
 Cybersecurity Intern
