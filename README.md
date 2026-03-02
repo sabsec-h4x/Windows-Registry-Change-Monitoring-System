@@ -1,208 +1,131 @@
-Windows Registry Change Monitoring System
-Endpoint Integrity Monitoring Project
-📌 Overview
+##windows-registry-change-monitoring-system
 
-The Windows Registry Change Monitoring System is a Blue Team cybersecurity project designed to detect unauthorized or suspicious modifications in critical Windows Registry locations.
+Blue Team endpoint integrity monitoring tool for detecting unauthorized Windows Registry modifications.
 
-The system captures a trusted baseline snapshot of sensitive registry keys and continuously monitors them using polling-based state comparison. It detects:
+A Python-based registry monitoring toolkit that:
 
-ADDED registry values
+Monitors autorun registry keys (Run / RunOnce)
 
-MODIFIED registry values
+Detects persistence mechanisms
 
-DELETED registry values
+Identifies security configuration tampering
 
-Autorun persistence entries
+Performs baseline-based integrity verification
 
-Security configuration tampering
+Classifies registry changes as ADDED, MODIFIED, or DELETED
 
-This project simulates practical endpoint integrity monitoring techniques used in Security Operations Centers (SOC).
+Generates structured forensic logs
 
-🎯 Problem Statement
+##1.Features
 
-The Windows Registry stores critical system configurations including:
+Registry Monitoring
 
-Startup programs
+Autorun key detection (HKCU / HKLM)
 
-Security policies
+Security policy monitoring
 
-Firewall rules
+Firewall configuration monitoring
 
-User privileges
+Integrity Verification
 
-System behavior parameters
+Baseline snapshot creation
 
-Attackers frequently modify registry keys to:
+Dictionary-based delta comparison
 
-Achieve persistence
+Change classification engine
 
-Disable Windows Defender
+Detection Capabilities
 
-Manipulate firewall policies
+Persistence injection detection
 
-Bypass UAC
+Security tool tampering detection
 
-Escalate privileges
+Unauthorized configuration changes
 
-Without monitoring mechanisms, such changes may remain undetected.
+Logging
 
-🚀 Project Objectives
+Structured console output
 
-Monitor autorun registry keys
+Change type identification
 
-Detect malware-like configuration changes
+Registry path tracking
 
-Implement baseline-based integrity verification
+Previous vs current value comparison
 
-Classify changes as ADDED, MODIFIED, DELETED
+##2.Architecture
 
-Generate structured forensic logs
+Baseline Creation → Continuous Monitoring → State Comparison → Change Detection → Logging
 
-🏗 System Architecture
+##3.Quickstart
 
-The system consists of the following components:
+Create virtual environment:
 
-Configuration Module
-Defines sensitive registry paths (monitored_keys.json)
+python -m venv venv
 
-Baseline Manager
-Captures trusted registry snapshot (baseline_registry.json)
+Activate environment:
 
-Monitoring Engine
-Continuously polls registry state
+Windows:
 
-Delta Analysis Engine
-Performs dictionary-based state comparison
+venv\Scripts\activate
 
-Logging & Alert Module
-Generates alerts and structured logs
+Linux/macOS:
 
-Data Flow:
+source venv/bin/activate
 
-Configuration
-→ Baseline Snapshot
-→ Continuous Monitoring
-→ State Comparison
-→ Change Detection
-→ Logging & Alerts
+Install dependencies:
 
-⚙️ Technologies Used
+pip install -r requirements.txt
 
-Python 3.x
+Create baseline snapshot:
 
-winreg (Windows Registry access)
-
-JSON (Configuration & baseline storage)
-
-Polling-based monitoring logic
-
-Structured console logging
-
-🧠 Detection Logic
-
-The system compares:
-
-Baseline Registry State
-vs
-Current Registry State
-
-It detects:
-
-Change Type	Description
-ADDED	New registry value detected
-MODIFIED	Registry value altered
-DELETED	Registry value removed
-🖥 Installation & Usage
-1️⃣ Clone Repository
-git clone https://github.com/yourusername/Windows-Registry-Change-Monitoring-System.git
-cd Windows-Registry-Change-Monitoring-System
-2️⃣ Create Baseline
 python create_baseline.py
 
-This generates:
+Start monitoring:
 
-baseline/baseline_registry.json
-3️⃣ Start Monitoring
 python main.py
+Example Output
+('ADDED', 'HKCU\\...\\Run', 'test_value', None, 'C:\\Users\\Public\\test.exe')
 
-The system will continuously monitor registry keys.
-
-📊 Example Output
-('ADDED', 'HKCU\\...\\Run', 'test_realtime_check', None, 'C:\\Users\\Public\\test.exe')
-
-('MODIFIED', 'HKCU\\...\\Run', 'test_realtime_check',
+('MODIFIED', 'HKCU\\...\\Run', 'test_value',
  'C:\\Users\\Public\\test.exe',
  'C:\\Users\\Public\\modified.exe')
 
-('DELETED', 'HKCU\\...\\Run', 'test_realtime_check',
+('DELETED', 'HKCU\\...\\Run', 'test_value',
  'C:\\Users\\Public\\modified.exe', None)
-🧪 Practical Demonstration
+##4.Use Case
 
-Testing steps performed:
+Designed to simulate:
 
-Created baseline snapshot
+Endpoint Detection & Response (EDR) logic
 
-Executed monitoring script
+SOC monitoring workflows
 
-Added new registry value → System detected ADDED
+Registry-based persistence detection
 
-Modified registry value → System detected MODIFIED
+Blue Team defensive scripting
 
-Deleted registry value → System detected DELETED
+##5.Limitations
 
-🔐 Blue Team Relevance
+Polling-based monitoring
 
-This project demonstrates:
-
-Endpoint integrity monitoring
-
-Registry persistence detection
-
-Configuration tampering detection
-
-Forensic trace logging
-
-Defensive Python scripting
-
-Similar techniques are used in:
-
-Endpoint Detection & Response (EDR)
-
-SIEM platforms
-
-SOC monitoring frameworks
-
-⚠️ Limitations
-
-Polling-based detection introduces slight delay
+Manual execution required
 
 No kernel-level monitoring
 
-No ETW integration
+No SIEM integration
 
-No centralized SIEM integration
+##6.Future Improvements
 
-🔮 Future Improvements
+Convert to Windows service
 
-Convert into Windows background service
+Event-driven registry monitoring
 
-Integrate with SIEM solutions (Splunk, ELK)
+SIEM integration
 
-Implement event-based registry monitoring
+Dashboard interface
 
-Add dashboard interface
+Severity-based alert classification
 
-Implement severity-based alert classification
-
-📁 Project Deliverables
-
-✔ Project documentation (PDF)
-✔ Registry monitoring toolkit
-✔ Screenshots of monitoring results
-✔ Baseline and integrity check logs
-✔ Architecture & workflow diagrams
-✔ Final presentation (PPT)
-
-👨‍💻 Author
+Author
 Sabareeshwari S
 Cybersecurity Intern
