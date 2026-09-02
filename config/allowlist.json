@@ -1,0 +1,41 @@
+{
+  "trusted_publishers": [
+    "Microsoft Corporation",
+    "Microsoft Windows",
+    "Google LLC",
+    "Mozilla Corporation",
+    "NVIDIA Corporation",
+    "Realtek Semiconductor Corp.",
+    "Intel Corporation",
+    "Adobe Inc."
+  ],
+  "trusted_paths": [
+    "C:\\Program Files\\",
+    "C:\\Program Files (x86)\\",
+    "C:\\Windows\\System32\\",
+    "C:\\Windows\\SysWOW64\\"
+  ],
+  "trusted_executable_names": [
+    "OneDrive.exe",
+    "SecurityHealthSystray.exe",
+    "RtkNGUI64.exe",
+    "nvspcaps64.exe",
+    "chrome.exe",
+    "firefox.exe",
+    "msedge.exe",
+    "cmd.exe",
+    "powershell.exe"
+  ],
+  "trusted_registry_values": [
+    {
+      "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "value_name": "OneDrive",
+      "pattern": ".*OneDrive\\.exe.*"
+    },
+    {
+      "key": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "value_name": "SecurityHealth",
+      "pattern": ".*SecurityHealthSystray\\.exe.*"
+    }
+  ]
+}

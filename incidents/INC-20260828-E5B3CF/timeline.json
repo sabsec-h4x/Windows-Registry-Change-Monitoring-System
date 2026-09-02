@@ -1,0 +1,17 @@
+[
+  {
+    "time": "2026-08-28T00:16:24.138688",
+    "stage": "DETECTION",
+    "event": "Registry ADDED detected in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\SystemPersistenceCheck"
+  },
+  {
+    "time": "2026-08-28T00:16:24.138688",
+    "stage": "CORRELATION",
+    "event": "Process attribution linked to powershell.exe (PID: 6684)"
+  },
+  {
+    "time": "2026-08-28T00:16:24.138688",
+    "stage": "ANALYSIS",
+    "event": "Risk Score computed as 100/100. Severity: CRITICAL"
+  }
+]

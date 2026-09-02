@@ -1,0 +1,32 @@
+{
+  "incident_id": "INC-20260828-E5B3CF",
+  "created_at": "2026-08-28T00:16:24.138688",
+  "title": "[CRITICAL] Canary Honey-Key Triggered on HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\SystemPersistenceCheck",
+  "severity": "CRITICAL",
+  "risk_score": 100,
+  "rule_id": "REG-CANARY-001",
+  "rule_name": "Canary Honey-Key Triggered",
+  "mitre_attack": {
+    "technique_id": "T1000.001",
+    "technique_name": "Registry Persistence"
+  },
+  "registry_target": {
+    "key": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\SystemPersistenceCheck",
+    "value_name": "IntegrityToken",
+    "action": "ADDED",
+    "new_value": "SYSTEM_CANARY_ACTIVE_HONEYPOT",
+    "old_value": null
+  },
+  "attribution": {
+    "user": "LAPTOP-8IAQT2P0\\Asus",
+    "process_name": "powershell.exe",
+    "pid": 6684,
+    "parent_process_name": "cmd.exe",
+    "parent_pid": 10916,
+    "command_line": "powershell.exe  -NoProfile -ExecutionPolicy Bypass -Command \"Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name, CommandLine, ExecutablePath, CreationDate | ConvertTo-Json -Compress\"",
+    "integrity_level": "Medium",
+    "attribution_source": "Live Process Tree Snapshot"
+  },
+  "pe_forensics": {},
+  "remediation_status": "READY_FOR_ANALYSIS"
+}

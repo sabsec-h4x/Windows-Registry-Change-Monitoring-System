@@ -1,0 +1,42 @@
+<!--
+  Wazuh Custom Rules for Windows Endpoint Persistence Detection Platform
+  Place in /var/ossec/etc/rules/local_rules.xml on your Wazuh Manager
+-->
+<group name="registry_persistence,mitre_persistence,">
+
+  <rule id="100500" level="3">
+    <decoded_as>registry_monitor_json</decoded_as>
+    <description>Registry Monitor Event Detected</description>
+  </rule>
+
+  <rule id="100501" level="7">
+    <if_sid>100500</if_sid>
+    <field name="severity">MEDIUM</field>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <description>Registry Persistence: $(rule_name) on $(registry_key)</description>
+  </rule>
+
+  <rule id="100502" level="10">
+    <if_sid>100500</if_sid>
+    <field name="severity">HIGH</field>
+    <mitre>
+      <id>T1547</id>
+      <id>T1546</id>
+    </mitre>
+    <description>High Severity Registry Persistence Alert: $(rule_name) by $(process_name)</description>
+  </rule>
+
+  <rule id="100503" level="13">
+    <if_sid>100500</if_sid>
+    <field name="severity">CRITICAL</field>
+    <mitre>
+      <id>T1546.012</id>
+      <id>T1562.001</id>
+      <id>T1059.001</id>
+    </mitre>
+    <description>CRITICAL Registry Persistence / Security Tamper: $(rule_name) on $(registry_key)</description>
+  </rule>
+
+</group>

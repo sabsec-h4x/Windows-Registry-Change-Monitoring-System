@@ -1,0 +1,33 @@
+{
+  "agent": {
+    "hostname": "auto",
+    "realtime_enabled": true,
+    "fallback_poll_interval_seconds": 15,
+    "canary_enabled": true,
+    "inspect_pe_files": true,
+    "attribution_enabled": true
+  },
+  "api": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "cors_origins": ["*"]
+  },
+  "database": {
+    "sqlite_path": "data/registry_monitor.db"
+  },
+  "logging": {
+    "events_jsonl": "logs/events.jsonl",
+    "alerts_jsonl": "logs/alerts.jsonl",
+    "human_log": "logs/registry_changes.log",
+    "incidents_dir": "incidents",
+    "cef_enabled": false
+  },
+  "webhooks": {
+    "enabled": false,
+    "url": "",
+    "min_severity": "HIGH"
+  },
+  "security": {
+    "baseline_hmac_secret": "endpoint-persistence-monitor-secret-key-2026"
+  }
+}

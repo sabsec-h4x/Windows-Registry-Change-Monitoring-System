@@ -1,0 +1,17 @@
+[
+  {
+    "time": "2026-08-28T00:16:19.260781",
+    "stage": "DETECTION",
+    "event": "Registry ADDED detected in HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+  },
+  {
+    "time": "2026-08-28T00:16:19.260781",
+    "stage": "CORRELATION",
+    "event": "Process attribution linked to powershell.exe (PID: 28168)"
+  },
+  {
+    "time": "2026-08-28T00:16:19.260781",
+    "stage": "ANALYSIS",
+    "event": "Risk Score computed as 85/100. Severity: CRITICAL"
+  }
+]

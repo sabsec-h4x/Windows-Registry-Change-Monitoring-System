@@ -1,0 +1,155 @@
+{
+  "rules": [
+    {
+      "id": "REG-CANARY-001",
+      "name": "Canary Honey-Key Triggered",
+      "severity": "CRITICAL",
+      "base_score": 100,
+      "technique_id": "T1000.001",
+      "description": "Modification detected in hidden decoy honey-key path",
+      "conditions": {
+        "key_contains": "SystemPersistenceCheck"
+      }
+    },
+    {
+      "id": "REG-TAMPER-DEFENDER",
+      "name": "Windows Defender Policy Tampering",
+      "severity": "CRITICAL",
+      "base_score": 90,
+      "technique_id": "T1562.001",
+      "description": "Attempt to disable Windows Defender Realtime Monitoring or Antivirus features",
+      "conditions": {
+        "key_contains": "Policies\\Microsoft\\Windows Defender",
+        "value_name_matches": "(DisableRealtimeMonitoring|DisableAntiSpyware|DisableBehaviorMonitoring|DisableOnAccessProtection)"
+      }
+    },
+    {
+      "id": "REG-TAMPER-UAC",
+      "name": "UAC Elevation Policy Bypass",
+      "severity": "CRITICAL",
+      "base_score": 85,
+      "technique_id": "T1548.002",
+      "description": "User Account Control security policy weakened or disabled",
+      "conditions": {
+        "key_contains": "Policies\\System",
+        "value_name_matches": "(EnableLUA|ConsentPromptBehaviorAdmin|PromptOnSecureDesktop)"
+      }
+    },
+    {
+      "id": "REG-PERSIST-IFEO",
+      "name": "IFEO Debugger Hijacking Persistence",
+      "severity": "CRITICAL",
+      "base_score": 95,
+      "technique_id": "T1546.012",
+      "description": "Debugger interception value registered under Image File Execution Options",
+      "conditions": {
+        "key_contains": "Image File Execution Options",
+        "value_name_matches": "(Debugger|GlobalFlag)"
+      }
+    },
+    {
+      "id": "REG-PERSIST-WINLOGON",
+      "name": "Winlogon Helper/Userinit/Shell Modification",
+      "severity": "CRITICAL",
+      "base_score": 90,
+      "technique_id": "T1547.004",
+      "description": "Logon shell or userinit altered to achieve persistent execution at login",
+      "conditions": {
+        "key_contains": "Winlogon",
+        "value_name_matches": "(Userinit|Shell|Taskman|Notify)"
+      }
+    },
+    {
+      "id": "REG-PERSIST-APPINIT",
+      "name": "AppInit_DLLs Global Injection",
+      "severity": "CRITICAL",
+      "base_score": 95,
+      "technique_id": "T1546.010",
+      "description": "DLL registered to inject into all user-mode processes upon startup",
+      "conditions": {
+        "key_contains": "CurrentVersion\\Windows",
+        "value_name_matches": "(AppInit_DLLs|LoadAppInit_DLLs)"
+      }
+    },
+    {
+      "id": "REG-PERSIST-LSA",
+      "name": "LSA Authentication Package Persistence",
+      "severity": "CRITICAL",
+      "base_score": 90,
+      "technique_id": "T1547.002",
+      "description": "Malicious authentication package or security package registered in LSA",
+      "conditions": {
+        "key_contains": "Control\\Lsa",
+        "value_name_matches": "(Authentication Packages|Security Packages|Notification Packages)"
+      }
+    },
+    {
+      "id": "REG-EXEC-POWERSHELL-ENC",
+      "name": "Encoded PowerShell Command in Persistence Key",
+      "severity": "CRITICAL",
+      "base_score": 85,
+      "technique_id": "T1059.001",
+      "description": "PowerShell executing Base64 encoded payload or bypass flags",
+      "conditions": {
+        "data_regex": "(?i)powershell.*(-e|-enc|-encodedcommand|-w hidden|-nop|-exec bypass|downloadstring|iex)"
+      }
+    },
+    {
+      "id": "REG-EXEC-LOLBIN",
+      "name": "Living-off-the-Land Binary (LOLBin) Invocation",
+      "severity": "HIGH",
+      "base_score": 75,
+      "technique_id": "T1218",
+      "description": "Suspicious execution via native Windows system utilities (mshta, rundll32, regsvr32, wscript, certutil)",
+      "conditions": {
+        "data_regex": "(?i)(mshta(\\.exe)?\\s+http|rundll32(\\.exe)?\\s+.*javascript|regsvr32(\\.exe)?\\s+/s\\s+/u\\s+/i:|cscript(\\.exe)?|wscript(\\.exe)?|certutil(\\.exe)?\\s+-urlcache|bitsadmin(\\.exe)?)"
+      }
+    },
+    {
+      "id": "REG-EXEC-SUSP-PATH",
+      "name": "Executable Hosted in User-Writable Directory",
+      "severity": "HIGH",
+      "base_score": 70,
+      "technique_id": "T1547.001",
+      "description": "Persistence binary pointing to Temp, AppData, Public, or PerfLogs",
+      "conditions": {
+        "data_regex": "(?i)(\\\\AppData\\\\(Local|Roaming)\\\\|\\\\Temp\\\\|C:\\\\Users\\\\Public\\\\|C:\\\\PerfLogs\\\\|C:\\\\Windows\\\\Tasks\\\\).*\\.(exe|bat|cmd|vbs|js|ps1|dll)"
+      }
+    },
+    {
+      "id": "REG-PERSIST-RUN",
+      "name": "Autorun Key Entry Added or Modified",
+      "severity": "MEDIUM",
+      "base_score": 45,
+      "technique_id": "T1547.001",
+      "description": "New or modified entry in Run or RunOnce startup key",
+      "conditions": {
+        "key_contains": "CurrentVersion\\Run"
+      }
+    },
+    {
+      "id": "REG-PERSIST-SERVICE",
+      "name": "Service ImagePath Modification",
+      "severity": "HIGH",
+      "base_score": 75,
+      "technique_id": "T1543.003",
+      "description": "Windows Service executable binary path created or altered",
+      "conditions": {
+        "key_contains": "Services",
+        "value_name_matches": "ImagePath"
+      }
+    },
+    {
+      "id": "REG-PERSIST-COM",
+      "name": "User-Level COM Class Hijacking",
+      "severity": "HIGH",
+      "base_score": 70,
+      "technique_id": "T1546.015",
+      "description": "InprocServer32 or TreatAs registered under HKCU CLSID",
+      "conditions": {
+        "key_contains": "Classes\\CLSID",
+        "value_name_matches": "(InprocServer32|LocalServer32|TreatAs)"
+      }
+    }
+  ]
+}

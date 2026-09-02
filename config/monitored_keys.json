@@ -1,13 +1,144 @@
 {
-  "autorun_keys": [
-    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
-    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce"
-  ],
-  "security_keys": [
-    "HKLM\\Software\\Policies\\Microsoft\\Windows Defender",
-    "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
-    "HKLM\\System\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy"
+  "monitored_locations": [
+    {
+      "category": "Persistence: Run Keys",
+      "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "technique_id": "T1547.001",
+      "technique_name": "Registry Run Keys / Startup Folder",
+      "recursive": false,
+      "views": ["32", "64"],
+      "severity_base": "HIGH",
+      "description": "User-level startup execution autorun key"
+    },
+    {
+      "category": "Persistence: Run Keys",
+      "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+      "technique_id": "T1547.001",
+      "technique_name": "Registry Run Keys / Startup Folder",
+      "recursive": false,
+      "views": ["32", "64"],
+      "severity_base": "HIGH",
+      "description": "User-level one-time startup execution key"
+    },
+    {
+      "category": "Persistence: Run Keys",
+      "path": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+      "technique_id": "T1547.001",
+      "technique_name": "Registry Run Keys / Startup Folder",
+      "recursive": false,
+      "views": ["32", "64"],
+      "severity_base": "HIGH",
+      "description": "System-wide startup execution autorun key"
+    },
+    {
+      "category": "Persistence: Run Keys",
+      "path": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+      "technique_id": "T1547.001",
+      "technique_name": "Registry Run Keys / Startup Folder",
+      "recursive": false,
+      "views": ["32", "64"],
+      "severity_base": "HIGH",
+      "description": "System-wide one-time startup execution key"
+    },
+    {
+      "category": "Persistence: IFEO Debugger Hijacking",
+      "path": "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options",
+      "technique_id": "T1546.012",
+      "technique_name": "Image File Execution Options Injection",
+      "recursive": true,
+      "views": ["32", "64"],
+      "severity_base": "CRITICAL",
+      "description": "Image File Execution Options debugger interception"
+    },
+    {
+      "category": "Persistence: Winlogon",
+      "path": "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+      "technique_id": "T1547.004",
+      "technique_name": "Winlogon Helper DLL / Userinit / Shell",
+      "recursive": false,
+      "views": ["32", "64"],
+      "severity_base": "CRITICAL",
+      "description": "Winlogon Shell and Userinit logon persistence"
+    },
+    {
+      "category": "Persistence: AppInit DLLs",
+      "path": "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Windows",
+      "technique_id": "T1546.010",
+      "technique_name": "AppInit DLLs Injection",
+      "recursive": false,
+      "views": ["32", "64"],
+      "severity_base": "CRITICAL",
+      "description": "AppInit_DLLs loaded into every user-mode process"
+    },
+    {
+      "category": "Persistence: LSA Authentication Packages",
+      "path": "HKLM\\System\\CurrentControlSet\\Control\\Lsa",
+      "technique_id": "T1547.002",
+      "technique_name": "Authentication Package / Security Packages",
+      "recursive": false,
+      "views": ["64"],
+      "severity_base": "CRITICAL",
+      "description": "LSA authentication and security package persistence"
+    },
+    {
+      "category": "Persistence: Services",
+      "path": "HKLM\\System\\CurrentControlSet\\Services",
+      "technique_id": "T1543.003",
+      "technique_name": "Windows Service Execution Hijacking",
+      "recursive": true,
+      "views": ["64"],
+      "severity_base": "HIGH",
+      "description": "System services executable image path tampering"
+    },
+    {
+      "category": "Persistence: COM Hijacking",
+      "path": "HKCU\\Software\\Classes\\CLSID",
+      "technique_id": "T1546.015",
+      "technique_name": "Component Object Model (COM) Hijacking",
+      "recursive": true,
+      "views": ["32", "64"],
+      "severity_base": "HIGH",
+      "description": "User-level COM InprocServer32 object hijacking"
+    },
+    {
+      "category": "Defense Evasion: Windows Defender",
+      "path": "HKLM\\Software\\Policies\\Microsoft\\Windows Defender",
+      "technique_id": "T1562.001",
+      "technique_name": "Disable or Modify Tools: Windows Defender",
+      "recursive": true,
+      "views": ["64"],
+      "severity_base": "CRITICAL",
+      "description": "Windows Defender AV policy tampering or disablement"
+    },
+    {
+      "category": "Privilege Escalation: UAC Policies",
+      "path": "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      "technique_id": "T1548.002",
+      "technique_name": "Bypass User Account Control",
+      "recursive": false,
+      "views": ["64"],
+      "severity_base": "CRITICAL",
+      "description": "UAC policy tampering (EnableLUA, ConsentPromptBehaviorAdmin)"
+    },
+    {
+      "category": "Defense Evasion: Firewall Policies",
+      "path": "HKLM\\System\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy",
+      "technique_id": "T1562.004",
+      "technique_name": "Disable or Modify System Firewall",
+      "recursive": true,
+      "views": ["64"],
+      "severity_base": "HIGH",
+      "description": "Windows Defender Firewall policy tampering"
+    },
+    {
+      "category": "Honey-Key Canary",
+      "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\SystemPersistenceCheck",
+      "technique_id": "T1000.001",
+      "technique_name": "Canary Decoy Honey-Key Trigger",
+      "recursive": false,
+      "views": ["64"],
+      "severity_base": "CRITICAL",
+      "description": "Decoy registry honey-key monitoring for automated malware discovery"
+    }
   ]
 }

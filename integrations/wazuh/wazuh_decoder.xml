@@ -1,0 +1,12 @@
+<!--
+  Wazuh Custom Decoder for Windows Endpoint Persistence Detection Platform
+  Place in /var/ossec/etc/decoders/local_decoder.xml on your Wazuh Manager
+-->
+<decoder name="registry_monitor_json">
+  <prematch>^{\s*"event_type":\s*"REGISTRY_</prematch>
+</decoder>
+
+<decoder name="registry_monitor_json_fields">
+  <parent>registry_monitor_json</parent>
+  <plugin_decoder>JSON_Decoder</plugin_decoder>
+</decoder>
